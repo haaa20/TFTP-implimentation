@@ -1,9 +1,9 @@
 package myTftp;
 
-public class AckPacket extends Packet{
+public class AckTftpPacket extends TftpPacket {
     int blockNo;
 
-    public AckPacket(int blockNo) {
+    public AckTftpPacket(int blockNo) {
         super(Oppcode.ACK);
         this.blockNo = blockNo;
     }

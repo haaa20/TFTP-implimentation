@@ -1,11 +1,11 @@
 package myTftp;
 
-public class DataPacket extends Packet {
+public class DataTftpPacket extends TftpPacket {
     private int blockNo;
     private byte[] data;
     private boolean end;
 
-    public DataPacket(int blockNo, byte[] data) {
+    public DataTftpPacket(int blockNo, byte[] data) {
         super(Oppcode.DATA);
         this.blockNo = blockNo;
         this.data = data;
