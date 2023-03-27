@@ -13,12 +13,6 @@ public class Client extends TftpUser implements Runnable{
 
     @Override
     public void run() {
-        try {
-            InetAddress serverAddress = InetAddress.getByName("localhost");
-            send(serverAddress, 9001);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
 
     }
 }

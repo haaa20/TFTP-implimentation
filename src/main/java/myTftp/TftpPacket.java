@@ -10,7 +10,7 @@ public abstract class TftpPacket {
     public TftpPacket(Oppcode oppcode) {}
 
     public static int extractPacketNo(byte[] bytePacket) {
-        if (bytePacket[0] != 3 || bytePacket[0] != 4) {
+        if (bytePacket[0] != 3 && bytePacket[0] != 4) {
             System.err.println("WARNING: this isn't an ACK or DATA packet");
         }
 

@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+
 public class TftpUser {
     public static int TFTP_CAPACITY = 512;
 
@@ -25,6 +26,40 @@ public class TftpUser {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
 
+    }
+
+    /**
+     * Basic ping, just to prove connection is possible
+     *
+     * @param address InetAddress
+     * @param port Port Number
+     */
+    public void sendPing(InetAddress address, int port) {
+        byte[] pingData = "PING!".getBytes();
+        DatagramPacket pingPacket = new DatagramPacket(pingData, pingData.length);
+        pingPacket.setAddress(address);
+        pingPacket.setPort(port);
+        try {
+            socket.send(pingPacket);
+        } catch (IOException e) {
+            throw new RuntimeException("Ping failed - client side");
+        }
+    }
+
+    /**
+     * Receive a basic ping
+     */
+    public void receivePing() {
+        DatagramPacket pingPacket = new DatagramPacket(new byte[8], 8);
+
+        try {
+            socket.receive(pingPacket);
+        } catch (IOException e) {
+            throw new RuntimeException("Ping failed - server side");
+        }
+
+        byte[] data = pingPacket.getData();
+        System.out.println(new String(data));
     }
 
     /**
@@ -51,6 +86,7 @@ public class TftpUser {
 
         // Send the packet out through the socket
         try {
+            System.out.println("I am sending data");
             socket.send(packet);
         } catch (IOException e) {
             System.err.println("There was a problem sending this packet");
@@ -83,6 +119,7 @@ public class TftpUser {
 
         try {
             socket.receive(packet);
+            System.out.println("I have received the data");
 
             // Store the address and port from which the inbound packet was sent, ready for acknowledgement
             // also extract the block no

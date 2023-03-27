@@ -6,6 +6,7 @@ import myTftp.TftpUser;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class Run {
 
@@ -15,19 +16,14 @@ public class Run {
             System.out.println("Hello! I am the server");
             TftpUser server = new TftpUser("Server", 9000);
 
-            server.receiveData();
+            // DO STUFF BELOW
+            server.receivePing();
         }
     };
 
     private static Thread clientThread = new Thread() {
         @Override
         public void run() {
-            // start the client after a short delay, to make sure the server runs first
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
 
             System.out.println("Hello! I am the client");
             TftpUser client = new TftpUser("Client", 9001);
@@ -39,7 +35,8 @@ public class Run {
                 throw new RuntimeException(e);
             }
 
-            client.sendSingleData(serverAddress, 9000, "HELLO".getBytes(), 1);
+            // DO STUFF BELOW
+            client.sendPing(serverAddress, 9000);
         }
     };
 

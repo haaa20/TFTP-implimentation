@@ -11,6 +11,6 @@ public class Server extends TftpUser implements Runnable{
 
     @Override
     public void run() {
-        receive();
+        receiveData();
     }
 }
