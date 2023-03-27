@@ -5,6 +5,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class TftpUser {
@@ -26,6 +28,24 @@ public class TftpUser {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
 
+    }
+
+    /**
+     * Send a list of bytes in one or more data packets
+     *
+     * @param data List
+     */
+    public void sendData(List<Byte> data) {
+
+    }
+
+    /**
+     * Send an array of bytes in one or more data packets
+     *
+     * @param data array
+     */
+    public void sendData(Byte[] data) {
+        sendData(Arrays.asList(data));
     }
 
     /**
