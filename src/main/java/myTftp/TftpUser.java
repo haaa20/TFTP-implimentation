@@ -14,22 +14,28 @@ public class TftpUser {
     private DatagramSocket socket;
     private byte[] buf;
 
-    public TftpUser(String name, int portNo) throws SocketException {
+    public TftpUser(String name, int portNo) {
         this.name = name;
-        this.socket = new DatagramSocket(portNo);
         this.buf = new byte[TFTP_CAPACITY];
         this.packet = new DatagramPacket(buf, TFTP_CAPACITY);
+
+        try {
+            this.socket = new DatagramSocket(portNo);
+        } catch (SocketException e) {
+            System.err.println("WARNING: " + name + " could not set up the socket correctly");
+        }
+
     }
 
     /**
-     * Sends a single data packet
+     * Sends a single data packet and waits for a response
      *
      * @param address InetAddress
      * @param port port number
      *
-     * @return True if acknowledgement received (even with resends)
+     * @return 0 if correct ack received, -1 if no ack received, n if incorrect nth ack received
      */
-    public boolean sendSingleData(InetAddress address, int port, byte[] data, int blockNo){
+    public int sendSingleData(InetAddress address, int port, byte[] data, int blockNo){
         // Check the data is valid
         if (data.length > TFTP_CAPACITY - 4) {
             System.err.println("Too much data!");
@@ -48,7 +54,7 @@ public class TftpUser {
             socket.send(packet);
         } catch (IOException e) {
             System.err.println("There was a problem sending this packet");
-            return false;
+            return -1;
         }
 
         // wait for an acknowledgement
@@ -56,14 +62,15 @@ public class TftpUser {
             socket.receive(packet);
         } catch (IOException e) {
             System.err.println("Cannot receive acknowledgement");
-            return false;
+            return -1;
         }
         buf = packet.getData();
-        if (TftpPacket.extractPacketNo(buf) == blockNo) {
-            return true;
+        int n = TftpPacket.extractPacketNo(buf);
+        if (n == blockNo) {
+            return 0;
         }
         else {
-            return false;
+            return n;
         }
     }
 
