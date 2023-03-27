@@ -29,40 +29,6 @@ public class TftpUser {
     }
 
     /**
-     * Basic ping, just to prove connection is possible
-     *
-     * @param address InetAddress
-     * @param port Port Number
-     */
-    public void sendPing(InetAddress address, int port) {
-        byte[] pingData = "PING!".getBytes();
-        DatagramPacket pingPacket = new DatagramPacket(pingData, pingData.length);
-        pingPacket.setAddress(address);
-        pingPacket.setPort(port);
-        try {
-            socket.send(pingPacket);
-        } catch (IOException e) {
-            throw new RuntimeException("Ping failed - client side");
-        }
-    }
-
-    /**
-     * Receive a basic ping
-     */
-    public void receivePing() {
-        DatagramPacket pingPacket = new DatagramPacket(new byte[8], 8);
-
-        try {
-            socket.receive(pingPacket);
-        } catch (IOException e) {
-            throw new RuntimeException("Ping failed - server side");
-        }
-
-        byte[] data = pingPacket.getData();
-        System.out.println(new String(data));
-    }
-
-    /**
      * Sends a single data packet and waits for a response
      *
      * @param address InetAddress
@@ -76,13 +42,14 @@ public class TftpUser {
             System.err.println("Too much data!");
         }
 
-        // Set the address and port number of the system to which the packet is being sent
-        packet.setAddress(address);
-        packet.setPort(port);
-
         // getting the data ready
         DataTftpPacket dataPacket = new DataTftpPacket(blockNo, data);
         buf = dataPacket.toBytes();
+
+        // Set the data, address, and port number
+        packet.setAddress(address);
+        packet.setPort(port);
+        packet.setData(buf);
 
         // Send the packet out through the socket
         try {
@@ -145,5 +112,39 @@ public class TftpUser {
         }
 
         return receivedData;
+    }
+
+    /**
+     * Basic ping, just to prove connection is possible
+     *
+     * @param address InetAddress
+     * @param port Port Number
+     */
+    public void sendPing(InetAddress address, int port) {
+        byte[] pingData = "PING!".getBytes();
+        DatagramPacket pingPacket = new DatagramPacket(pingData, pingData.length);
+        pingPacket.setAddress(address);
+        pingPacket.setPort(port);
+        try {
+            socket.send(pingPacket);
+        } catch (IOException e) {
+            throw new RuntimeException("Ping failed - client side");
+        }
+    }
+
+    /**
+     * Receive a basic ping
+     */
+    public void receivePing() {
+        DatagramPacket pingPacket = new DatagramPacket(new byte[8], 8);
+
+        try {
+            socket.receive(pingPacket);
+        } catch (IOException e) {
+            throw new RuntimeException("Ping failed - server side");
+        }
+
+        byte[] data = pingPacket.getData();
+        System.out.println(new String(data));
     }
 }

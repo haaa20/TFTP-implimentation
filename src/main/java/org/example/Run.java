@@ -17,7 +17,7 @@ public class Run {
             TftpUser server = new TftpUser("Server", 9000);
 
             // DO STUFF BELOW
-            server.receivePing();
+            server.receiveData();
         }
     };
 
@@ -36,7 +36,7 @@ public class Run {
             }
 
             // DO STUFF BELOW
-            client.sendPing(serverAddress, 9000);
+            client.sendSingleData(serverAddress, 9000, "HELLO".getBytes(), 1);
         }
     };
 
