@@ -53,7 +53,6 @@ public class TftpUser {
 
         // Send the packet out through the socket
         try {
-            System.out.println("I am sending data");
             socket.send(packet);
         } catch (IOException e) {
             System.err.println("There was a problem sending this packet");
@@ -80,13 +79,12 @@ public class TftpUser {
     /**
      * Waits until a packet is received through the socket, and sends an acknowledgement
      */
-    public byte[] receiveData() {
+    public byte[] receiveSingleData() {
         // The array where we will store the retrieved data, ready to be returned
         byte[] receivedData = new byte[TFTP_CAPACITY - 4];
 
         try {
             socket.receive(packet);
-            System.out.println("I have received the data");
 
             // Store the address and port from which the inbound packet was sent, ready for acknowledgement
             // also extract the block no

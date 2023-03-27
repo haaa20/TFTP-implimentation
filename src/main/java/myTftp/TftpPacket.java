@@ -21,7 +21,7 @@ public abstract class TftpPacket {
         if (bytePacket[0] != 3) {
             System.err.println("WARNING: this isn't a DATA packet");
         }
-        return Arrays.copyOfRange(bytePacket, 3, TftpUser.TFTP_CAPACITY);
+        return Arrays.copyOfRange(bytePacket, 4, TftpUser.TFTP_CAPACITY);
     }
 
     public abstract byte[] toBytes();

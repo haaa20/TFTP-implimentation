@@ -6,7 +6,6 @@ import myTftp.TftpUser;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 public class Run {
 
@@ -17,7 +16,8 @@ public class Run {
             TftpUser server = new TftpUser("Server", 9000);
 
             // DO STUFF BELOW
-            server.receiveData();
+            byte[] data = server.receiveSingleData();
+            System.out.println(new String(data));
         }
     };
 
@@ -36,7 +36,8 @@ public class Run {
             }
 
             // DO STUFF BELOW
-            client.sendSingleData(serverAddress, 9000, "HELLO".getBytes(), 1);
+            int i = client.sendSingleData(serverAddress, 9000, "HELLO".getBytes(), 1);
+            System.out.println(i);
         }
     };
 
