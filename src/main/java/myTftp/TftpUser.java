@@ -53,8 +53,8 @@ public class TftpUser {
      *
      * @param data array
      */
-    public void sendData(Byte[] data) {
-        sendData(Arrays.asList(data));
+    public void sendData(InetAddress address, int portNo, Byte[] data) {
+        sendData(address, portNo, Arrays.asList(data));
     }
 
     /**
