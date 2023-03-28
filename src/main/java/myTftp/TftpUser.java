@@ -36,8 +36,16 @@ public class TftpUser {
      *
      * @param data List
      */
-    public void sendData(List<Byte> data) {
+    public void sendData(InetAddress address, int portNo, List<Byte> data) {
+        Iterator<Byte[]> it = segmentData(data);
+        int blockNo = 1;
+        byte[] packetBuf;
 
+        while (it.hasNext()) {
+            packetBuf = unwrapByteArray(it.next());
+            sendSingleData(address, portNo, packetBuf, blockNo);
+            blockNo++;
+        }
     }
 
     /**
@@ -136,7 +144,7 @@ public class TftpUser {
     /**
      * Splits a large list of bytes into segments of the right size to fit in a TFTP data packet - IE 508 byte chunks
      *
-     * @param data
+     * @param data List of Bytes
      * @return An Iterator object
      */
     public static Iterator<Byte[]> segmentData(List<Byte> data) {
@@ -158,6 +166,11 @@ public class TftpUser {
         };
     }
 
+    /**
+     * Unwrapps the contents of Bytes to an array of primitive bytes
+     * @param a Array of Bytes
+     * @return byte[]
+     */
     public static byte[] unwrapByteArray(Byte[] a) {
         byte[] b = new byte[a.length];
         int i = 0;
