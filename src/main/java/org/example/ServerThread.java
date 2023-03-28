@@ -9,7 +9,7 @@ public class ServerThread extends Thread {
         TftpUser server = new TftpUser("Server", 9000);
 
         // DO STUFF BELOW
-        byte[] data = server.receiveSingleData();
+        byte[] data = server.receiveData();
         System.out.println(new String(data));
     }
 }

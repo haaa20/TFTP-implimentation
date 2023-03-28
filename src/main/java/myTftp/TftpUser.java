@@ -1,7 +1,5 @@
 package myTftp;
 
-import sun.security.util.ArrayUtil;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -25,10 +23,10 @@ public class TftpUser {
 
         try {
             this.socket = new DatagramSocket(portNo);
+            socket.setSoTimeout(5000);
         } catch (SocketException e) {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
-
     }
 
     /**
@@ -61,14 +59,6 @@ public class TftpUser {
      */
     public void sendData(InetAddress address, int portNo, Byte[] data) {
         sendData(address, portNo, Arrays.asList(data));
-    }
-
-    public byte[] receiveData() {
-        List<byte[]> receivedSegmentedData = new LinkedList<>();
-        byte[] completeData;
-
-        completeData = new byte[receivedSegmentedData.size() * 508];
-        return completeData;
     }
 
     /**
@@ -131,41 +121,61 @@ public class TftpUser {
     /**
      * Waits until a packet is received through the socket, and sends an acknowledgement
      */
-    public byte[] receiveSingleData() {
+    public byte[] receiveData() {
         // The array where we will store the retrieved data, ready to be returned
-        byte[] receivedData = new byte[0];
+        byte[] receivedData;
 
+        // Receive and acknowledge the first packet
+        // there will always be at least 1
         try {
             socket.receive(packet);
-            int len = packet.getLength();
-
-            // Store the address and port from which the inbound packet was sent, ready for acknowledgement
-            // also extract the block no
-            InetAddress senderAddress = packet.getAddress();
-            int senderPort = packet.getPort();
-
-            // Extracting the data and packet no
-            int ackNo = TftpPacket.extractPacketNo(buf);
-            receivedData = TftpPacket.extractData(buf, len);
-
-            sendAck(senderAddress, senderPort, ackNo);
+            acknowledge(packet);
         } catch (IOException e) {
-            System.err.println("There was a problem receiving this packet");
+            throw new RuntimeException("There was a problem receiving this packet");
         }
+
+        // Extract the data from the packet
+        int len = packet.getLength();
+        receivedData = TftpPacket.extractData(buf, len);
+
+        // So long as we are still receiving packets of the maximum capacity, that means there is MORE data on its way
+        int i = 1;
+        while (len >= TFTP_CAPACITY) {
+            System.out.println(i++);
+            try {
+                socket.receive(packet);
+                acknowledge(packet);
+                len = packet.getLength();
+            } catch (IOException e) {
+                throw new RuntimeException("There was a problem receiving this packet");
+            }
+        }
+        System.out.println("done");
 
         return receivedData;
     }
 
-    private void sendAck(InetAddress address, int portNo, int blockNo) throws IOException {
+    private void acknowledge(DatagramPacket p) {
+        // Store the address and port from which the inbound packet was sent, ready for acknowledgement
+        // also extract the block no
+        InetAddress address = p.getAddress();
+        int portNo = p.getPort();
+
+        // Extracting the data and packet no
+        int blockNo = TftpPacket.extractPacketNo(p.getData());
+
         // Preparing the ack packet
         AckTftpPacket ack = new AckTftpPacket(blockNo);
-        buf = ack.toBytes();
-        packet.setAddress(address);
-        packet.setPort(portNo);
-        packet.setData(buf);
+        p.setAddress(address);
+        p.setPort(portNo);
+        p.setData(ack.toBytes());
 
         // Sending the ack packet
-        socket.send(packet);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to send acknowledgement");
+        }
     }
 
     /**
@@ -188,7 +198,8 @@ public class TftpUser {
             public Byte[] next() {
                 Object[] dataSegment = data.subList(i, Math.min(i+408, data.size())).toArray();
                 i += 408;
-                return Arrays.copyOf(dataSegment, dataSegment.length, Byte[].class);
+                Byte[] bytes = Arrays.copyOf(dataSegment, dataSegment.length, Byte[].class);
+                return bytes;
             }
         };
     }
