@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -133,7 +134,31 @@ public class TftpUser {
     }
 
     /**
-     * Basic ping, just to prove connection is possible
+     * Splits a large list of bytes into segments of the right size to fit in a TFTP data packet - IE 508 byte chunks
+     *
+     * @param data
+     * @return An Iterator object
+     */
+    public static Iterator<Byte[]> segmentData(List<Byte> data) {
+        // I'm feeling brave let's do an anonymous class ha ha ha!!
+        return new Iterator<Byte[]>() {
+            int i = 0;
+
+            @Override
+            public boolean hasNext() {
+                return (i >= data.size());
+            }
+
+            @Override
+            public Byte[] next() {
+                Object[] dataSegment = data.subList(i, Math.min(i+408, data.size())).toArray();
+                return (Byte[]) dataSegment;
+            }
+        };
+    }
+
+    /**
+     * Basic ping, just to prove connection is possible - mostly for debugging
      *
      * @param address InetAddress
      * @param port Port Number
@@ -151,7 +176,7 @@ public class TftpUser {
     }
 
     /**
-     * Receive a basic ping
+     * Receive a basic ping - mostly for debugging
      */
     public void receivePing() {
         DatagramPacket pingPacket = new DatagramPacket(new byte[8], 8);
