@@ -39,11 +39,17 @@ public class TftpUser {
     public void sendData(InetAddress address, int portNo, List<Byte> data) {
         Iterator<Byte[]> it = segmentData(data);
         int blockNo = 1;
+        int sendCode;
         byte[] packetBuf;
 
         while (it.hasNext()) {
             packetBuf = unwrapByteArray(it.next());
-            sendSingleData(address, portNo, packetBuf, blockNo);
+            sendCode = sendSingleData(address, portNo, packetBuf, blockNo);
+
+            if (sendCode != 0) {
+                // OH NO! Something went wrong!
+            }
+
             blockNo++;
         }
     }

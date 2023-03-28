@@ -44,5 +44,7 @@ public class Run {
     public static void main(String[] args) throws SocketException {
         clientThread.start();
         serverThread.start();
+
+        System.out.println();
     }
 }
