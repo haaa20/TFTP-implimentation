@@ -146,15 +146,27 @@ public class TftpUser {
 
             @Override
             public boolean hasNext() {
-                return (i >= data.size());
+                return (i < data.size());
             }
 
             @Override
             public Byte[] next() {
                 Object[] dataSegment = data.subList(i, Math.min(i+408, data.size())).toArray();
-                return (Byte[]) dataSegment;
+                i += 408;
+                return Arrays.copyOf(dataSegment, dataSegment.length, Byte[].class);
             }
         };
+    }
+
+    public static byte[] unwrapByteArray(Byte[] a) {
+        byte[] b = new byte[a.length];
+        int i = 0;
+
+        for (Byte wrapped : a) {
+            b[i++] = wrapped;
+        }
+
+        return b;
     }
 
     /**
