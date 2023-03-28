@@ -16,10 +16,9 @@ public class ClientThread extends Thread {
     @Override
     public void run() {
         System.out.println("Hello! I am the client");
-        fileManager.open("tea.txt");
 
         TftpUser client = new TftpUser("Client", 9001);
-        String message = fileManager.readFull();
+        String message = "Hello mr Server, how's the wife and kids?";
         InetAddress serverAddress;
 
         try {
@@ -29,8 +28,7 @@ public class ClientThread extends Thread {
         }
 
         // DO STUFF BELOW
-        int i = client.sendSingleData(serverAddress, 9000, message.getBytes(), 1);
-        System.out.println(i);
+        client.sendData(serverAddress, 9000, message.getBytes());
     }
 }
 

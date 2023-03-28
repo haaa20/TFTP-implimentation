@@ -1,5 +1,7 @@
 package myTftp;
 
+import sun.security.util.ArrayUtil;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -70,6 +72,15 @@ public class TftpUser {
     }
 
     /**
+     * Send an array of bytes in one or more data packets
+     *
+     * @param data array
+     */
+    public void sendData(InetAddress serverAddress, int i, byte[] data) {
+        sendData(serverAddress, i, wrapByteArray(data));
+    }
+
+    /**
      * Sends a single data packet and waits for a response
      *
      * @param address InetAddress
@@ -137,20 +148,24 @@ public class TftpUser {
             int ackNo = TftpPacket.extractPacketNo(buf);
             receivedData = TftpPacket.extractData(buf, len);
 
-            // Preparing the ack packet
-            AckTftpPacket ack = new AckTftpPacket(ackNo);
-            buf = ack.toBytes();
-            packet.setAddress(senderAddress);
-            packet.setPort(senderPort);
-            packet.setData(buf);
-
-            // Sending the ack packet
-            socket.send(packet);
+            sendAck(senderAddress, senderPort, ackNo);
         } catch (IOException e) {
             System.err.println("There was a problem receiving this packet");
         }
 
         return receivedData;
+    }
+
+    private void sendAck(InetAddress address, int portNo, int blockNo) throws IOException {
+        // Preparing the ack packet
+        AckTftpPacket ack = new AckTftpPacket(blockNo);
+        buf = ack.toBytes();
+        packet.setAddress(address);
+        packet.setPort(portNo);
+        packet.setData(buf);
+
+        // Sending the ack packet
+        socket.send(packet);
     }
 
     /**
@@ -179,7 +194,8 @@ public class TftpUser {
     }
 
     /**
-     * Unwrapps the contents of Bytes to an array of primitive bytes
+     * Unwraps the contents of Bytes to an array of primitive bytes
+     *
      * @param a Array of Bytes
      * @return byte[]
      */
@@ -189,6 +205,23 @@ public class TftpUser {
 
         for (Byte wrapped : a) {
             b[i++] = wrapped;
+        }
+
+        return b;
+    }
+
+    /**
+     * Wraps the contents of bytes to an array
+     *
+     * @param a Array of Bytes
+     * @return byte[]
+     */
+    public static Byte[] wrapByteArray(byte[] a) {
+        Byte[] b = new Byte[a.length];
+        int i = 0;
+
+        for (byte p : a) {
+            b[i++] = p;
         }
 
         return b;
