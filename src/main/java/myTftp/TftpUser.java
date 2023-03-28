@@ -5,9 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 public class TftpUser {
@@ -63,6 +61,14 @@ public class TftpUser {
         sendData(address, portNo, Arrays.asList(data));
     }
 
+    public byte[] receiveData() {
+        List<byte[]> receivedSegmentedData = new LinkedList<>();
+        byte[] completeData;
+
+        completeData = new byte[receivedSegmentedData.size() * 508];
+        return completeData;
+    }
+
     /**
      * Sends a single data packet and waits for a response
      *
@@ -116,10 +122,11 @@ public class TftpUser {
      */
     public byte[] receiveSingleData() {
         // The array where we will store the retrieved data, ready to be returned
-        byte[] receivedData = new byte[TFTP_CAPACITY - 4];
+        byte[] receivedData = new byte[0];
 
         try {
             socket.receive(packet);
+            int len = packet.getLength();
 
             // Store the address and port from which the inbound packet was sent, ready for acknowledgement
             // also extract the block no
@@ -127,9 +134,8 @@ public class TftpUser {
             int senderPort = packet.getPort();
 
             // Extracting the data and packet no
-            buf = packet.getData();
             int ackNo = TftpPacket.extractPacketNo(buf);
-            receivedData = TftpPacket.extractData(buf);
+            receivedData = TftpPacket.extractData(buf, len);
 
             // Preparing the ack packet
             AckTftpPacket ack = new AckTftpPacket(ackNo);

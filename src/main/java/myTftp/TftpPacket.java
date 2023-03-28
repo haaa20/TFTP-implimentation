@@ -17,11 +17,11 @@ public abstract class TftpPacket {
         return bytePacket[2];
     }
 
-    public static byte[] extractData(byte[] bytePacket) {
+    public static byte[] extractData(byte[] bytePacket, int len) {
         if (bytePacket[0] != 3) {
             System.err.println("WARNING: this isn't a DATA packet");
         }
-        return Arrays.copyOfRange(bytePacket, 4, TftpUser.TFTP_CAPACITY);
+        return Arrays.copyOfRange(bytePacket, 4, len);
     }
 
     public abstract byte[] toBytes();

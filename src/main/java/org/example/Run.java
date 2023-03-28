@@ -6,7 +6,5 @@ public class Run {
 
         clientThread.start();
         serverThread.start();
-
-        System.out.println();
     }
 }
