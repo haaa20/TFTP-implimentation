@@ -1,25 +1,22 @@
 package myTftp;
 
 import java.net.DatagramPacket;
-import java.net.SocketAddress;
-import java.util.HashMap;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 public class TftpServer extends TftpUser implements Runnable {
     private boolean running;
-    private HashMap<Integer, SocketAddress> clients;
-    private int nextUniqueId;
+    private Queue<ClientRequest> clientRequests;
 
     public TftpServer(String name, int portNo) {
         super(name, portNo);
         this.running = false;
-        this.nextUniqueId = 0;
-        this.clients = new HashMap<>();
+        this.clientRequests = new ArrayDeque<>();
     }
 
     private void awaitRequests() {
         while (running) {
             DatagramPacket request = rawReceive();
-            clients.put(nextUniqueId++, request.getSocketAddress());
         }
     }
 
@@ -31,5 +28,27 @@ public class TftpServer extends TftpUser implements Runnable {
 
     public void terminate() {
         running = false;
+    }
+
+    // Do they want to read or write?
+    private enum Mode {READ, WRITE}
+
+    // What has each client actually requested?
+    private class ClientRequest {
+        private String fileName;
+        private Mode mode;
+
+        public ClientRequest(String fileName, Mode mode) {
+            this.fileName = fileName;
+            this.mode = mode;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public Mode getMode() {
+            return mode;
+        }
     }
 }
