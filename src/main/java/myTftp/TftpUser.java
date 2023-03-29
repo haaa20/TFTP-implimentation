@@ -65,13 +65,16 @@ public class TftpUser {
     }
 
     public boolean receiveData() {
-        // Receive and acknowledge the first packet
+        // Receive and acknowledge the first packet - there will (should) always be at least one
         try {
             socket.receive(packet);
             acknowledge(packet);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        // Extract the first data block
+        byte[] data = packet.getData();
 
         return false;
     }
@@ -128,29 +131,15 @@ public class TftpUser {
      * Waits until a packet is received through the socket, and sends an acknowledgement
      */
     public byte[] receiveSingleData() {
-        // The array where we will store the retrieved data, ready to be returned
-        byte[] receivedData = new byte[0];
-
         try {
             socket.receive(packet);
             acknowledge(packet);
             int len = packet.getLength();
 
-            // Store the address and port from which the inbound packet was sent, ready for acknowledgement
-            // also extract the block no
-            InetAddress senderAddress = packet.getAddress();
-            int senderPort = packet.getPort();
-
-            // Extracting the data and packet no
-            int ackNo = TftpPacket.extractPacketNo(buf);
-            receivedData = TftpPacket.extractData(buf, len);
-
-
+            return TftpPacket.extractData(buf, len);
         } catch (IOException e) {
-            System.err.println("There was a problem receiving this packet");
+            throw new RuntimeException("There was a problem receiving this packet");
         }
-
-        return receivedData;
     }
 
     /**
@@ -159,7 +148,7 @@ public class TftpUser {
      * @param p DatagramPacket
      * @throws IOException IDK if there's a problem
      */
-    private void acknowledge(DatagramPacket p) throws IOException {
+    protected void acknowledge(DatagramPacket p) throws IOException {
         // Preparing the ack packet
         AckTftpPacket ackData = new AckTftpPacket(TftpPacket.extractPacketNo(p.getData()));
         DatagramPacket ackPacket = new DatagramPacket(ackData.toBytes(), 4);
