@@ -168,6 +168,18 @@ public class TftpUser {
         socket.send(packet);
     }
 
+    public static byte[] dataWindow(List<Byte> data, int winNo) {
+        int winSize = TFTP_CAPACITY - 4;
+        Byte[] window = new Byte[winSize];
+        window = data.subList(winSize * winNo, winSize * (winNo+1)).toArray(window);
+        return unwrapByteArray(window);
+    }
+
+    public static byte[] dataWindow(byte[] data, int winNo) {
+        int winSize = TFTP_CAPACITY - 4;
+        return Arrays.copyOfRange(data, winSize * winNo, winSize * (winNo+1));
+    }
+
     /**
      * Splits a large list of bytes into segments of the right size to fit in a TFTP data packet - IE 508 byte chunks
      *
