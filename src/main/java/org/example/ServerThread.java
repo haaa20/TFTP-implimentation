@@ -3,6 +3,8 @@ package org.example;
 import myTftp.FileManager;
 import myTftp.TftpUser;
 
+import java.util.ArrayList;
+
 public class ServerThread extends Thread {
     private FileManager fileManager;
     private TftpUser server;
@@ -16,7 +18,7 @@ public class ServerThread extends Thread {
         server.say("Online...");
 
         // DO STUFF BELOW
-        byte[] data = server.receiveSingleData();
-        System.out.println("\n" + new String(data));
+        ArrayList<byte[]> buf = new ArrayList<>();
+        server.receiveData(buf);
     }
 }

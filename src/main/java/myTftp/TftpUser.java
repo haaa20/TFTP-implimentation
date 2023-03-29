@@ -64,19 +64,24 @@ public class TftpUser {
         sendData(address, portNo, data.toArray(new Byte[data.size()]));
     }
 
-    public boolean receiveData() {
+    /**
+     * Receives data and writes it to a list in blocks
+     *
+     * @param dataStream The list to chick the blocks of data are to be added
+     * @return true if all data was received successfully
+     */
+    public boolean receiveData(List<byte[]> dataStream) {
         // Receive and acknowledge the first packet - there will (should) always be at least one
-        try {
-            socket.receive(packet);
-            acknowledge(packet);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
         // Extract the first data block
-        byte[] data = packet.getData();
+        byte[] data = receiveSingleData();
+        dataStream.add(data.clone());
 
-        return false;
+        // So long as we are yet to receive a packet of below maximum length, there is more data coming!
+        while (data.length < TFTP_CAPACITY) {
+            data = receiveSingleData();
+            dataStream.add(data.clone());
+        }
+        return true;
     }
 
     /**
