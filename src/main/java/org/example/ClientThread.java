@@ -8,19 +8,21 @@ import java.net.UnknownHostException;
 
 public class ClientThread extends Thread {
     private FileManager fileManager;
+    private TftpUser client;
 
     public ClientThread() {
         fileManager = new FileManager("clientStorage");
+        client = new TftpUser("Client", 9001);
     }
 
     @Override
     public void run() {
-        System.out.println("Hello! I am the client");
-        TftpUser client = new TftpUser("Client", 9001);
+        client.say("Online...");
+
         fileManager.open("someText.txt");
         String message = fileManager.readFull();
-        InetAddress serverAddress;
 
+        InetAddress serverAddress;
         try {
             serverAddress = InetAddress.getByName("localhost");
         } catch (UnknownHostException e) {

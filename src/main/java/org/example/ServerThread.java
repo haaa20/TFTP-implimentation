@@ -1,15 +1,22 @@
 package org.example;
 
+import myTftp.FileManager;
 import myTftp.TftpUser;
 
 public class ServerThread extends Thread {
+    private FileManager fileManager;
+    private TftpUser server;
+
+    public ServerThread() {
+        fileManager = new FileManager("clientStorage");
+        server = new TftpUser("Server", 9000);
+    }
     @Override
     public void run() {
-        System.out.println("Hello! I am the server");
-        TftpUser server = new TftpUser("Server", 9000);
+        server.say("Online...");
 
         // DO STUFF BELOW
         byte[] data = server.receiveSingleData();
-        System.out.println(new String(data));
+        System.out.println("\n" + new String(data));
     }
 }
