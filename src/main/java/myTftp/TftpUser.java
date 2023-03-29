@@ -63,14 +63,6 @@ public class TftpUser {
         sendData(address, portNo, Arrays.asList(data));
     }
 
-    public byte[] receiveData() {
-        List<byte[]> receivedSegmentedData = new LinkedList<>();
-        byte[] completeData;
-
-        completeData = new byte[receivedSegmentedData.size() * 508];
-        return completeData;
-    }
-
     /**
      * Send an array of bytes in one or more data packets
      *
@@ -78,6 +70,14 @@ public class TftpUser {
      */
     public void sendData(InetAddress serverAddress, int i, byte[] data) {
         sendData(serverAddress, i, wrapByteArray(data));
+    }
+
+    public byte[] receiveData() {
+        List<byte[]> receivedSegmentedData = new LinkedList<>();
+        byte[] completeData;
+
+        completeData = new byte[receivedSegmentedData.size() * 508];
+        return completeData;
     }
 
     /**
@@ -169,15 +169,43 @@ public class TftpUser {
     }
 
     public static byte[] dataWindow(List<Byte> data, int winNo) {
-        int winSize = TFTP_CAPACITY - 4;
-        Byte[] window = new Byte[winSize];
-        window = data.subList(winSize * winNo, winSize * (winNo+1)).toArray(window);
-        return unwrapByteArray(window);
+        int winStart = (TFTP_CAPACITY - 4)*winNo;
+        int winEnd = (TFTP_CAPACITY - 4)*(winNo+1);
+        Byte[] window = new Byte[TFTP_CAPACITY - 4];
+        int dataSize = data.size();
+
+        if (winEnd < dataSize) {
+            // The window is not the last
+            window = data.subList(winStart, winEnd).toArray(window);
+            return unwrapByteArray(window);
+        }
+        else if (winStart <= dataSize) {
+            // The winEnd is beyond the end of the data, but the start is at or before
+            window = data.subList(winStart, dataSize).toArray(window);
+            return unwrapByteArray(window);
+        }
+        else {
+            // winStart is at the end of the data: the window is empty
+            return new byte[0];
+        }
     }
 
     public static byte[] dataWindow(byte[] data, int winNo) {
-        int winSize = TFTP_CAPACITY - 4;
-        return Arrays.copyOfRange(data, winSize * winNo, winSize * (winNo+1));
+        int winStart = (TFTP_CAPACITY - 4)*winNo;
+        int winEnd = (TFTP_CAPACITY - 4)*(winNo+1);
+
+        if (winEnd < data.length) {
+            // The window is not the last
+            return Arrays.copyOfRange(data, winStart, winEnd);
+        }
+        else if (winStart <= data.length) {
+            // The winEnd is beyond the end of the data, but the start is at or before
+            return Arrays.copyOfRange(data, winStart, data.length);
+        }
+        else {
+            // winStart is at the end of the data: the window is empty
+            return new byte[0];
+        }
     }
 
     /**
