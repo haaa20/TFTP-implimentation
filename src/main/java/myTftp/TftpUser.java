@@ -8,7 +8,7 @@ import java.net.SocketException;
 import java.util.*;
 
 
-public class TftpUser {
+public abstract class TftpUser {
     public static int TFTP_CAPACITY = 512;
 
     private String name;
@@ -28,7 +28,6 @@ public class TftpUser {
         } catch (SocketException e) {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
-
     }
 
     /**

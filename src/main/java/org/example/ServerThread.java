@@ -1,17 +1,18 @@
 package org.example;
 
 import myTftp.FileManager;
+import myTftp.TftpServer;
 import myTftp.TftpUser;
 
 import java.util.ArrayList;
 
 public class ServerThread extends Thread {
     private FileManager fileManager;
-    private TftpUser server;
+    private TftpServer server;
 
     public ServerThread() {
         fileManager = new FileManager("clientStorage");
-        server = new TftpUser("Server", 9000);
+        server = new TftpServer("Server", 9000);
     }
     @Override
     public void run() {

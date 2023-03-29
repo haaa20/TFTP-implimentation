@@ -1,6 +1,7 @@
 package org.example;
 
 import myTftp.FileManager;
+import myTftp.TftpClient;
 import myTftp.TftpUser;
 
 import java.net.InetAddress;
@@ -8,11 +9,11 @@ import java.net.UnknownHostException;
 
 public class ClientThread extends Thread {
     private FileManager fileManager;
-    private TftpUser client;
+    private TftpClient client;
 
     public ClientThread() {
         fileManager = new FileManager("clientStorage");
-        client = new TftpUser("Client", 9001);
+        client = new TftpClient("Client", 9001);
     }
 
     @Override
