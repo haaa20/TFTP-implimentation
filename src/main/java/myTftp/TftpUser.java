@@ -168,6 +168,13 @@ public class TftpUser {
         socket.send(packet);
     }
 
+    /**
+     * returns the ith data window - where each window is size 408 bytes or less
+     *
+     * @param data the data
+     * @param winNo i
+     * @return the window, or an empty array
+     */
     public static byte[] dataWindow(List<Byte> data, int winNo) {
         int winStart = (TFTP_CAPACITY - 4)*winNo;
         int winEnd = (TFTP_CAPACITY - 4)*(winNo+1);
@@ -190,6 +197,13 @@ public class TftpUser {
         }
     }
 
+    /**
+     * returns the ith data window - where each window is size 408 bytes or less
+     *
+     * @param data the data
+     * @param winNo i
+     * @return the window, or an empty array
+     */
     public static byte[] dataWindow(byte[] data, int winNo) {
         int winStart = (TFTP_CAPACITY - 4)*winNo;
         int winEnd = (TFTP_CAPACITY - 4)*(winNo+1);
@@ -265,6 +279,15 @@ public class TftpUser {
         }
 
         return b;
+    }
+
+    /**
+     * Does what is says in the tin I'm not explaining it I'm in enough of a rush as it is
+     */
+    private static int calculateNumOfWindows(int dataLen) {
+        int winNo = dataLen / 508;
+        if (winNo % 508 == 0) {winNo++;}
+        return winNo;
     }
 
     /**
