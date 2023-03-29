@@ -32,26 +32,14 @@ public class TftpUser {
     }
 
     /**
-     * Send a list of bytes in one or more data packets
+     * Send an array of bytes in one or more data packets
      *
-     * @param data List
+     * Most efficient of the three overloads
+     *
+     * @param data array
      */
-    public void sendData(InetAddress address, int portNo, List<Byte> data) {
-        Iterator<Byte[]> it = segmentData(data);
-        int blockNo = 1;
-        int sendCode;
-        byte[] packetBuf;
+    public void sendData(InetAddress serverAddress, int i, byte[] data) {
 
-        while (it.hasNext()) {
-            packetBuf = unwrapByteArray(it.next());
-            sendCode = sendSingleData(address, portNo, packetBuf, blockNo);
-
-            if (sendCode != 0) {
-                // OH NO! Something went wrong!
-            }
-
-            blockNo++;
-        }
     }
 
     /**
@@ -60,16 +48,16 @@ public class TftpUser {
      * @param data array
      */
     public void sendData(InetAddress address, int portNo, Byte[] data) {
-        sendData(address, portNo, Arrays.asList(data));
+        sendData(address, portNo, unwrapByteArray(data));
     }
 
     /**
-     * Send an array of bytes in one or more data packets
+     * Send a list of bytes in one or more data packets
      *
-     * @param data array
+     * @param data List
      */
-    public void sendData(InetAddress serverAddress, int i, byte[] data) {
-        sendData(serverAddress, i, wrapByteArray(data));
+    public void sendData(InetAddress address, int portNo, List<Byte> data) {
+        sendData(address, portNo, data.toArray(new Byte[data.size()]));
     }
 
     public byte[] receiveData() {
