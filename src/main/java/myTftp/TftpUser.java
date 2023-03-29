@@ -41,7 +41,7 @@ public class TftpUser {
     public void sendData(InetAddress serverAddress, int portNo, byte[] data) {
         int finalPacketNo = calculateNumOfWindows(data.length);
 
-        for (int i = 0; i > finalPacketNo; i++) {
+        for (int i = 0; i < finalPacketNo; i++) {
             byte[] dataBlock = dataWindow(data, i);
             sendSingleData(serverAddress, portNo, dataBlock, i);
         }
