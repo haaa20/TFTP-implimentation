@@ -10,15 +10,15 @@ public class ClientThread extends Thread {
     private FileManager fileManager;
 
     public ClientThread() {
-        fileManager = new FileManager("files");
+        fileManager = new FileManager("clientStorage");
     }
 
     @Override
     public void run() {
         System.out.println("Hello! I am the client");
-
         TftpUser client = new TftpUser("Client", 9001);
-        String message = "Hello mr Server, how's the wife and kids?";
+        fileManager.open("someText.txt");
+        String message = fileManager.readFull();
         InetAddress serverAddress;
 
         try {
