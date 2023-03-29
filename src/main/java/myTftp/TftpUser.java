@@ -33,13 +33,18 @@ public class TftpUser {
 
     /**
      * Send an array of bytes in one or more data packets
-     *
+     * <p>
      * Most efficient of the three overloads
      *
      * @param data array
      */
-    public void sendData(InetAddress serverAddress, int i, byte[] data) {
+    public void sendData(InetAddress serverAddress, int portNo, byte[] data) {
+        int finalPacketNo = calculateNumOfWindows(data.length);
 
+        for (int i = 0; i > finalPacketNo; i++) {
+            byte[] dataBlock = dataWindow(data, i);
+            sendSingleData(serverAddress, portNo, dataBlock, i);
+        }
     }
 
     /**
@@ -200,7 +205,7 @@ public class TftpUser {
             // The window is not the last
             return Arrays.copyOfRange(data, winStart, winEnd);
         }
-        else if (winStart <= data.length) {
+        else if (winStart < data.length) {
             // The winEnd is beyond the end of the data, but the start is at or before
             return Arrays.copyOfRange(data, winStart, data.length);
         }
@@ -279,36 +284,11 @@ public class TftpUser {
     }
 
     /**
-     * Basic ping, just to prove connection is possible - mostly for debugging
-     *
-     * @param address InetAddress
-     * @param port Port Number
+     * Prints a message to the terminal along with the user's name - primarily for debugging
+     * @param message
      */
-    public void sendPing(InetAddress address, int port) {
-        byte[] pingData = "PING!".getBytes();
-        DatagramPacket pingPacket = new DatagramPacket(pingData, pingData.length);
-        pingPacket.setAddress(address);
-        pingPacket.setPort(port);
-        try {
-            socket.send(pingPacket);
-        } catch (IOException e) {
-            throw new RuntimeException("Ping failed - client side");
-        }
+    public void say(String message) {
+        System.out.println(name + ": " + message);
     }
 
-    /**
-     * Receive a basic ping - mostly for debugging
-     */
-    public void receivePing() {
-        DatagramPacket pingPacket = new DatagramPacket(new byte[8], 8);
-
-        try {
-            socket.receive(pingPacket);
-        } catch (IOException e) {
-            throw new RuntimeException("Ping failed - server side");
-        }
-
-        byte[] data = pingPacket.getData();
-        System.out.println(new String(data));
-    }
 }
