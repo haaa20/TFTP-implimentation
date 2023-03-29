@@ -81,7 +81,7 @@ public class TftpUser {
         int i = 1;
 
         // So long as we are yet to receive a packet of below maximum length, there is more data coming!
-        while (data.length < TFTP_CAPACITY) {
+        while (data.length >= TFTP_CAPACITY - 4) {
             say("Expecting another packet...");
             data = receiveSingleData();
             dataStream.add(data.clone());
@@ -147,7 +147,8 @@ public class TftpUser {
             acknowledge(packet);
             int len = packet.getLength();
 
-            return TftpPacket.extractData(buf, len);
+            byte[] bytes = TftpPacket.extractData(buf, len);
+            return bytes;
         } catch (IOException e) {
             throw new RuntimeException("There was a problem receiving this packet");
         }
