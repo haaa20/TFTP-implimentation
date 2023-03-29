@@ -1,7 +1,5 @@
 package myTftp;
 
-import sun.security.util.ArrayUtil;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -42,6 +40,7 @@ public class TftpUser {
         int finalPacketNo = calculateNumOfWindows(data.length);
 
         for (int i = 0; i < finalPacketNo; i++) {
+            say("Sending packet no." + i);
             byte[] dataBlock = dataWindow(data, i);
             sendSingleData(serverAddress, portNo, dataBlock, i);
         }
@@ -65,12 +64,16 @@ public class TftpUser {
         sendData(address, portNo, data.toArray(new Byte[data.size()]));
     }
 
-    public byte[] receiveData() {
-        List<byte[]> receivedSegmentedData = new LinkedList<>();
-        byte[] completeData;
+    public boolean receiveData() {
+        // Receive and acknowledge the first packet
+        try {
+            socket.receive(packet);
+            acknowledge(packet);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        completeData = new byte[receivedSegmentedData.size() * 508];
-        return completeData;
+        return false;
     }
 
     /**
@@ -130,6 +133,7 @@ public class TftpUser {
 
         try {
             socket.receive(packet);
+            acknowledge(packet);
             int len = packet.getLength();
 
             // Store the address and port from which the inbound packet was sent, ready for acknowledgement
@@ -141,7 +145,7 @@ public class TftpUser {
             int ackNo = TftpPacket.extractPacketNo(buf);
             receivedData = TftpPacket.extractData(buf, len);
 
-            sendAck(senderAddress, senderPort, ackNo);
+
         } catch (IOException e) {
             System.err.println("There was a problem receiving this packet");
         }
@@ -149,16 +153,23 @@ public class TftpUser {
         return receivedData;
     }
 
-    private void sendAck(InetAddress address, int portNo, int blockNo) throws IOException {
+    /**
+     * Acknowledge the given packet (do this IMMEDIATELY after the packet is received to minimise spaghetti please)
+     *
+     * @param p DatagramPacket
+     * @throws IOException IDK if there's a problem
+     */
+    private void acknowledge(DatagramPacket p) throws IOException {
         // Preparing the ack packet
-        AckTftpPacket ack = new AckTftpPacket(blockNo);
-        buf = ack.toBytes();
-        packet.setAddress(address);
-        packet.setPort(portNo);
-        packet.setData(buf);
+        AckTftpPacket ackData = new AckTftpPacket(TftpPacket.extractPacketNo(p.getData()));
+        DatagramPacket ackPacket = new DatagramPacket(ackData.toBytes(), 4);
+
+        // Addressing the acknowledgement packet
+        ackPacket.setAddress(p.getAddress());
+        ackPacket.setPort(p.getPort());
 
         // Sending the ack packet
-        socket.send(packet);
+        socket.send(ackPacket);
     }
 
     /**
