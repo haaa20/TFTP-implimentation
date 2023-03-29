@@ -30,6 +30,7 @@ public class ClientThread extends Thread {
         }
 
         // DO STUFF BELOW
+        client.setDebug(true);
         client.sendData(serverAddress, 9000, message.getBytes());
     }
 }

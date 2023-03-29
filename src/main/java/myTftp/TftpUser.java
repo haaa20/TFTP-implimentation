@@ -15,11 +15,13 @@ public class TftpUser {
     private DatagramPacket packet;
     private DatagramSocket socket;
     private byte[] buf;
+    private boolean debug;
 
     public TftpUser(String name, int portNo) {
         this.name = name;
         this.buf = new byte[TFTP_CAPACITY];
         this.packet = new DatagramPacket(buf, TFTP_CAPACITY);
+        this.debug = false;
 
         try {
             this.socket = new DatagramSocket(portNo);
@@ -38,8 +40,9 @@ public class TftpUser {
      */
     public void sendData(InetAddress serverAddress, int portNo, byte[] data) {
         int finalPacketNo = calculateNumOfWindows(data.length);
+        say("I should be sending " + finalPacketNo + " packets");
 
-        for (int i = 0; i < finalPacketNo; i++) {
+        for (int i = 0; i <= finalPacketNo; i++) {
             say("Sending packet no." + i);
             byte[] dataBlock = dataWindow(data, i);
             sendSingleData(serverAddress, portNo, dataBlock, i);
@@ -75,11 +78,14 @@ public class TftpUser {
         // Extract the first data block
         byte[] data = receiveSingleData();
         dataStream.add(data.clone());
+        int i = 1;
 
         // So long as we are yet to receive a packet of below maximum length, there is more data coming!
         while (data.length < TFTP_CAPACITY) {
+            say("Expecting another packet...");
             data = receiveSingleData();
             dataStream.add(data.clone());
+            i++;
         }
         return true;
     }
@@ -155,8 +161,10 @@ public class TftpUser {
      */
     protected void acknowledge(DatagramPacket p) throws IOException {
         // Preparing the ack packet
-        AckTftpPacket ackData = new AckTftpPacket(TftpPacket.extractPacketNo(p.getData()));
+        int blockNo = TftpPacket.extractPacketNo(p.getData());
+        AckTftpPacket ackData = new AckTftpPacket(blockNo);
         DatagramPacket ackPacket = new DatagramPacket(ackData.toBytes(), 4);
+        say("Received packet no." + blockNo);
 
         // Addressing the acknowledgement packet
         ackPacket.setAddress(p.getAddress());
@@ -293,7 +301,15 @@ public class TftpUser {
      * @param message
      */
     public void say(String message) {
+        if (!debug) {return;}
         System.out.println(name + ": " + message);
     }
 
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
 }
