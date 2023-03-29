@@ -113,20 +113,12 @@ public abstract class TftpUser {
         packet.setData(buf);
 
         // Send the packet out through the socket
-        try {
-            socket.send(packet);
-        } catch (IOException e) {
-            System.err.println("There was a problem sending this packet");
+        if (!rawSend(packet)) {
             return -1;
         }
 
         // wait for an acknowledgement
-        try {
-            socket.receive(packet);
-        } catch (IOException e) {
-            System.err.println("Cannot receive acknowledgement");
-            return -1;
-        }
+        packet = rawReceive();
         buf = packet.getData();
         int n = TftpPacket.extractPacketNo(buf);
         if (n == blockNo) {
@@ -141,16 +133,11 @@ public abstract class TftpUser {
      * Waits until a packet is received through the socket, and sends an acknowledgement
      */
     public byte[] receiveSingleData() {
-        try {
-            socket.receive(packet);
-            acknowledge(packet);
-            int len = packet.getLength();
+        DatagramPacket p = rawReceive();
+        acknowledge(p);
+        int len = packet.getLength();
 
-            byte[] bytes = TftpPacket.extractData(buf, len);
-            return bytes;
-        } catch (IOException e) {
-            throw new RuntimeException("There was a problem receiving this packet");
-        }
+        return TftpPacket.extractData(buf, len);
     }
 
     /**
@@ -159,7 +146,7 @@ public abstract class TftpUser {
      * @param p DatagramPacket
      * @throws IOException IDK if there's a problem
      */
-    protected void acknowledge(DatagramPacket p) throws IOException {
+    protected void acknowledge(DatagramPacket p) {
         // Preparing the ack packet
         int blockNo = TftpPacket.extractPacketNo(p.getData());
         AckTftpPacket ackData = new AckTftpPacket(blockNo);
@@ -171,7 +158,7 @@ public abstract class TftpUser {
         ackPacket.setPort(p.getPort());
 
         // Sending the ack packet
-        socket.send(ackPacket);
+        rawSend(ackPacket);
     }
 
     /**
@@ -294,6 +281,35 @@ public abstract class TftpUser {
         int winNo = dataLen / 508;
         if (winNo % 508 == 0) {winNo++;}
         return winNo;
+    }
+
+    /**
+     * Sends the given packet out of the socket
+     *
+     * @param p DatagramPacket
+     * @return True if packet successfully sent out
+     */
+    protected final boolean rawSend(DatagramPacket p) {
+        // This SHOULD be the only method to directly use socket.send()
+        try {
+            socket.send(p);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Waits to receive a packet, and returns it. Does not acknowledge
+     */
+    protected final DatagramPacket rawReceive() {
+        // This SHOULD be the only method to directly use socket.receive()
+        try {
+            socket.receive(packet);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not receive packet");
+        }
+        return packet;
     }
 
     /**
