@@ -56,7 +56,8 @@ public class TftpClient extends TftpUser{
         }
 
         // Send out the request package and await acknowledgment
-        p = new DatagramPacket(rq.toBytes(), TFTP_CAPACITY);
+        byte[] buf = rq.toBytes();
+        p = new DatagramPacket(buf, buf.length);
         rawSend(p);
         p = rawReceive();
 

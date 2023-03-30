@@ -17,10 +17,6 @@ public class ServerThread extends Thread {
         server.say("Online...");
 
         // DO STUFF BELOW
-        String message;
-
-        message = new String(server.receiveAndAssemble());
-
-        System.out.println(message);
+        server.run();
     }
 }
