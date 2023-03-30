@@ -17,6 +17,8 @@ public class ClientThread extends Thread {
 
     @Override
     public void run() {
+        client.setDebug(true);
+
         InetAddress serverAddress;
         try {
             serverAddress = InetAddress.getByName("localhost");

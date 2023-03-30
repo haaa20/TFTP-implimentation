@@ -23,8 +23,12 @@ public abstract class TftpPacket {
     }
 
     public static int extractPacketNo(byte[] bytePacket) {
-        if (bytePacket[0] != 3 && bytePacket[0] != 4) {
-            System.err.println("WARNING: this isn't an ACK or DATA packet");
+        byte opcode = bytePacket[0];
+        if (opcode == 1 || opcode == 2) {
+            return 0;
+        }
+        if (opcode < 4) {
+            System.err.println("WARNING: unexpected opcode");
         }
 
         return bytePacket[2];

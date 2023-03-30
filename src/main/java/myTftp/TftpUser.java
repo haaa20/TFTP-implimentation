@@ -69,6 +69,18 @@ public abstract class TftpUser {
     }
 
     /**
+     * Sends the contents of the given file
+     *
+     * @param address recipient address
+     * @param portNo recipient port number
+     * @param pathname path of the file to be sent
+     */
+    public void sendFile(InetAddress address, int portNo, String pathname) {
+        byte[] read = fileManager.read(pathname);
+        sendData(address, portNo, read);
+    }
+
+    /**
      * Receives data and writes it to a list in blocks
      *
      * @param dataStream The list to chick the blocks of data are to be added
@@ -100,18 +112,6 @@ public abstract class TftpUser {
         List<byte[]> blockBuf = new ArrayList();
         receiveData(blockBuf);
         return assembleData(blockBuf);
-    }
-
-    /**
-     * Sends the contents of the given file
-     *
-     * @param address recipient address
-     * @param portNo recipient port number
-     * @param pathname path of the file to be sent
-     */
-    public void sendFile(InetAddress address, int portNo, String pathname) {
-        byte[] read = fileManager.read(pathname);
-        sendData(address, portNo, read);
     }
 
     /**

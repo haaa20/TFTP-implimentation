@@ -58,13 +58,15 @@ public class TftpClient extends TftpUser{
         // Send out the request package and await acknowledgment
         byte[] buf = rq.toBytes();
         p = new DatagramPacket(buf, buf.length);
+        p.setAddress(address);
+        p.setPort(portNo);
         rawSend(p);
         p = rawReceive();
 
         // Check that the packet we received is what we expected:
         // an ack packet of block no. 0
         // from the same address we sent the request to
-        if (p.getAddress() != address || p.getPort() != portNo) {
+        if (!p.getAddress().equals(address) || p.getPort() != portNo) {
             sendError(p, "You are not who I expected");
             return false;
         }

@@ -14,6 +14,7 @@ public class ServerThread extends Thread {
     }
     @Override
     public void run() {
+        server.setDebug(true);
         server.say("Online...");
 
         // DO STUFF BELOW
