@@ -18,9 +18,7 @@ public class TftpClient extends TftpUser{
      * @return True if request granted
      */
     public boolean requestRead(InetAddress address, int portNo, String fileName) {
-        if (request(address, portNo, fileName, WRMode.READ)) {
-            return true;
-        }
+        request(address, portNo, fileName, WRMode.READ);
 
         return false;
     }
@@ -34,17 +32,34 @@ public class TftpClient extends TftpUser{
      * @return True if request granted
      */
     public boolean requestWrite(InetAddress address, int portNo, String fileName) {
-        if (request(address, portNo, fileName, WRMode.WRITE)){
-            sendFile(address, portNo, fileName);
-            return true;
+        request(address, portNo, fileName, WRMode.WRITE);
+        DatagramPacket p = rawReceive();
+
+        // A null packet signifies that our request timed out, try again!
+        while (p == null) {
+            request(address, portNo, fileName, WRMode.WRITE);
+            p = rawReceive();
         }
+
+        // Check that the packet we received is what we expected:
+        // i.e. an ack packet of block no. 0
+        // from the same address we sent the request to
+        if (!p.getAddress().equals(address) || p.getPort() != portNo) {
+            sendError(p, "You are not who I expected");
+            return false;
+        }
+        else if (TftpPacket.extractPacketNo(p.getData()) != 0) {
+            return false;
+        }
+
+        sendFile(address, portNo, fileName);
 
         return false;
     }
 
     // As the methods requestRead() and requestWrite() are so similar, they're both basically calls to
     // the below with slightly different parameters
-    private boolean request(InetAddress address, int portNo, String fileName, WRMode mode) {
+    private void request(InetAddress address, int portNo, String fileName, WRMode mode) {
         TftpPacket rq;
         DatagramPacket p;
         byte[] response;
@@ -62,18 +77,5 @@ public class TftpClient extends TftpUser{
         p.setAddress(address);
         p.setPort(portNo);
         rawSend(p);
-        p = rawReceive();
-
-        // Check that the packet we received is what we expected:
-        // an ack packet of block no. 0
-        // from the same address we sent the request to
-        if (!p.getAddress().equals(address) || p.getPort() != portNo) {
-            sendError(p, "You are not who I expected");
-            return false;
-        }
-        else if (TftpPacket.extractPacketNo(p.getData()) != 0) {
-            return false;
-        }
-        return true;
     }
 }
