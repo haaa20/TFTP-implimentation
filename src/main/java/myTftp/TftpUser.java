@@ -44,7 +44,7 @@ public abstract class TftpUser {
         say("I should be sending " + finalPacketNo + " packets");
 
         for (int i = 0; i <= finalPacketNo; i++) {
-            say("Sending packet no." + i);
+            say("Sending packet no." + (i+1));
             byte[] dataBlock = dataWindow(data, i);
             sendSingleData(serverAddress, portNo, dataBlock, i);
         }
