@@ -352,4 +352,7 @@ public abstract class TftpUser {
     public void setDebug(boolean debug) {
         this.debug = debug;
     }
+
+    // Do they want to read or write?
+    protected enum WRMode {READ, WRITE}
 }

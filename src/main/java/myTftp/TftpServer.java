@@ -30,15 +30,12 @@ public class TftpServer extends TftpUser implements Runnable {
         running = false;
     }
 
-    // Do they want to read or write?
-    private enum Mode {READ, WRITE}
-
     // What has each client actually requested?
     private class ClientRequest {
         private String fileName;
-        private Mode mode;
+        private WRMode mode;
 
-        public ClientRequest(String fileName, Mode mode) {
+        public ClientRequest(String fileName, WRMode mode) {
             this.fileName = fileName;
             this.mode = mode;
         }
@@ -47,7 +44,7 @@ public class TftpServer extends TftpUser implements Runnable {
             return fileName;
         }
 
-        public Mode getMode() {
+        public WRMode getMode() {
             return mode;
         }
     }
