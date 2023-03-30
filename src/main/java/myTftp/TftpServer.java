@@ -89,6 +89,10 @@ public class TftpServer extends TftpUser implements Runnable {
             }
 
             clientRequests.add(new ClientRequest(pathname, wr, request));
+
+            // IF IT GETS TRULY DESPERATE, UNCOMMENT THE BELLOW
+
+            // handleTopRequest();
         }
     }
 
