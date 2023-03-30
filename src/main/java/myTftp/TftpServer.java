@@ -23,11 +23,18 @@ public class TftpServer extends TftpUser implements Runnable {
             DatagramPacket p = rawReceive();
             int op = TftpPacket.extractOpcode(p);
 
-            if (op == 1 || op == 2) {
-                // A new request
+            if (op == 1) {
+                // A new READ request
+            }
+            else if (op == 2) {
+                // A new WRITE request
             }
             else if (op == 3) {
-                // A new data packet
+                // A new DATA packet
+            }
+            else if (op == 4) {
+                // A new ACK packet!
+                // ... Which, remember, will be in response to an outgoing data packet!
             }
         }
     }
@@ -45,15 +52,4 @@ public class TftpServer extends TftpUser implements Runnable {
         running = false;
     }
 
-    private class ClientRequest {
-        private String fileName;
-        private WRMode wr;
-        private SocketAddress clientAddress;
-
-        public ClientRequest(String fileName, WRMode mode, DatagramPacket requestPacket) {
-            this.fileName = fileName;
-            this.wr = mode;
-            this.clientAddress = requestPacket.getSocketAddress();
-        }
-    }
 }
