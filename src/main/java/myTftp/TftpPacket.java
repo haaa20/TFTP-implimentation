@@ -1,6 +1,7 @@
 package myTftp;
 
 
+import java.net.DatagramPacket;
 import java.util.Arrays;
 
 public abstract class TftpPacket {
@@ -17,6 +18,10 @@ public abstract class TftpPacket {
         return opcode;
     }
 
+    public static int extractOpcode(byte[] bytePacket) {
+        return bytePacket[0];
+    }
+
     public static int extractPacketNo(byte[] bytePacket) {
         if (bytePacket[0] != 3 && bytePacket[0] != 4) {
             System.err.println("WARNING: this isn't an ACK or DATA packet");
@@ -30,6 +35,10 @@ public abstract class TftpPacket {
             System.err.println("WARNING: this isn't a DATA packet");
         }
         return Arrays.copyOfRange(bytePacket, 4, len);
+    }
+
+    public static int extractOpcode(DatagramPacket p) {
+        return extractOpcode(p.getData());
     }
 
     public abstract byte[] toBytes();

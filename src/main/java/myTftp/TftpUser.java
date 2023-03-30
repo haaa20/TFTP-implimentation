@@ -91,8 +91,24 @@ public abstract class TftpUser {
         return true;
     }
 
-    public void sendFile(InetAddress address, int portNo, String filePath) {
-        byte[] read = fileManager.read(filePath);
+    /**
+     * waits for data to be sent, and reassembles it for the packets
+     *
+     * @return The data as a continuous byte array
+     */
+    public byte[] receiveAndAssemble() {
+
+    }
+
+    /**
+     * Sends the contents of the given file
+     *
+     * @param address recipient address
+     * @param portNo recipient port number
+     * @param pathname path of the file to be sent
+     */
+    public void sendFile(InetAddress address, int portNo, String pathname) {
+        byte[] read = fileManager.read(pathname);
         sendData(address, portNo, read);
     }
 
@@ -190,6 +206,10 @@ public abstract class TftpUser {
 
         // Sending the ack packet
         rawSend(ackPacket);
+    }
+
+    public boolean saveFile(String pathname, byte[] contents) {
+        return fileManager.save(pathname, contents);
     }
 
     /**
@@ -362,11 +382,11 @@ public abstract class TftpUser {
     }
 
     public void setFileHomePath(String homePath) {
-        fileManager.setHomePath(homePath);
+        fileManager.setHomepath(homePath);
     }
 
     public String getFileHomePath(String homePath) {
-        return fileManager.getHomePath();
+        return fileManager.getHomepath();
     }
 
     public boolean isDebug() {

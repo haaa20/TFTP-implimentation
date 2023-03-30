@@ -17,6 +17,19 @@ public class TftpServer extends TftpUser implements Runnable {
     private void awaitRequests() {
         while (running) {
             DatagramPacket request = rawReceive();
+            int opcode = TftpPacket.extractOpcode(request);
+
+            if (opcode == 1) {
+                // READ REQUEST
+            }
+            else if (opcode == 2) {
+                // WRITE REQUEST
+            }
+            else {
+                sendError(request, "Not a read or write request");
+            }
+
+            rec
         }
     }
 

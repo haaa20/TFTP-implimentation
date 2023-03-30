@@ -1,17 +1,13 @@
 package myTftp;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
-import java.util.Scanner;
 
 public class FileManager {
-    private String homePath;
+    private String homepath;
     private File selectedFile;
 
     public FileManager(String homePath) {
-        this.homePath = homePath;
+        this.homepath = homePath;
     }
 
     public FileManager() {
@@ -21,11 +17,11 @@ public class FileManager {
     /**
      * Returns the given file encoded as an array of bytes - ready for transmission
      *
-     * @param file File name or path
+     * @param pathname File name or path
      * @return file as byte[]
      */
-    public byte[] read(String file) {
-        selectFile(file);
+    public byte[] read(String pathname) {
+        selectFile(pathname);
         try {
             return Files.readAllBytes(selectedFile.toPath());
         } catch (IOException e) {
@@ -33,23 +29,37 @@ public class FileManager {
         }
     }
 
-    public void write(String dest) {
+    /**
+     * Saves the contents withing the byte array to the path given. If no such path exists, then a file will be created,
+     * otherwise teh contents of the file will be overwritten.
+     *
+     * @param pathname Path to be saved to
+     * @param contents Data
+     * @return
+     */
+    public boolean save(String pathname, byte[] contents) {
+        selectFile(pathname);
+        FileOutputStream fos;
 
+        try {
+            selectedFile.createNewFile();
+            fos = new FileOutputStream(selectedFile);
+            fos.write(contents);
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
-    public void write() {
-        write("");
+    private void selectFile(String pathname) {
+        selectedFile = new File(homepath + "/" + pathname);
     }
 
-    private void selectFile(String filePath) {
-        selectedFile = new File(homePath + "/" + filePath);
+    public String getHomepath() {
+        return homepath;
     }
 
-    public String getHomePath() {
-        return homePath;
-    }
-
-    public void setHomePath(String homePath) {
-        this.homePath = homePath;
+    public void setHomepath(String homepath) {
+        this.homepath = homepath;
     }
 }
