@@ -1,6 +1,7 @@
 package myTftp;
 
 import java.net.DatagramPacket;
+import java.net.SocketAddress;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
@@ -51,10 +52,12 @@ public class TftpServer extends TftpUser implements Runnable {
     private class ClientRequest {
         private String fileName;
         private WRMode mode;
+        private SocketAddress clientAddress;
 
-        public ClientRequest(String fileName, WRMode mode) {
+        public ClientRequest(String fileName, WRMode mode, DatagramPacket requestPacket) {
             this.fileName = fileName;
             this.mode = mode;
+            this.clientAddress = requestPacket.getSocketAddress();
         }
 
         public String getFileName() {
@@ -63,6 +66,10 @@ public class TftpServer extends TftpUser implements Runnable {
 
         public WRMode getMode() {
             return mode;
+        }
+
+        public SocketAddress getClientAddress() {
+            return clientAddress;
         }
     }
 }
