@@ -16,6 +16,7 @@ public abstract class TftpUser {
     private DatagramSocket socket;
     private byte[] buf;
     private boolean debug;
+    private FileManager fileManager;
 
     public TftpUser(String name, int portNo) {
         this.name = name;
@@ -337,10 +338,19 @@ public abstract class TftpUser {
     }
 
     /**
+     * Sends out an error package in response to p - usually done when p was unexpected
+     *
+     * @param p problem DatagramPacket
+     */
+    protected final void sendError(DatagramPacket p, String errorMessage) {
+        // TODO
+    }
+
+    /**
      * Prints a message to the terminal along with the user's name - primarily for debugging
      * @param message
      */
-    public void say(String message) {
+    public final void say(String message) {
         if (!debug) {return;}
         System.out.println(name + ": " + message);
     }

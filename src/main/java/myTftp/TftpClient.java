@@ -51,10 +51,23 @@ public class TftpClient extends TftpUser{
             rq = new WrqTftpPacket(fileName);
         }
 
+        // Send out the request package and await acknowledgment
         p = new DatagramPacket(rq.toBytes(), TFTP_CAPACITY);
         rawSend(p);
         p = rawReceive();
 
-        return false;
+        // Check that the packet we received is what we expected:
+        // an ack packet of block no. 0
+        // from the same address we sent the request to
+        if (p.getAddress() != address || p.getPort() != portNo) {
+            sendError(p, "You are not who I expected");
+            return false;
+        }
+        else if (TftpPacket.extractPacketNo(p.getData()) != 0) {
+            return false;
+        }
+
+
+        return true;
     }
 }
