@@ -6,7 +6,7 @@ public class DataTftpPacket extends TftpPacket {
     private boolean end;
 
     public DataTftpPacket(int blockNo, byte[] data) {
-        super(Oppcode.DATA);
+        super(3);
         this.blockNo = blockNo;
         this.data = data;
 
@@ -25,7 +25,7 @@ public class DataTftpPacket extends TftpPacket {
         byte [] asBytes = new byte[packetLength];
 
         // Setting the opcode and block no
-        asBytes[0] = 3;
+        asBytes[0] = (byte) getOpcode();
         asBytes[2] = (byte) blockNo; // NAIVE what if blockNo > 255...!?!?!
 
         // Copying the data across

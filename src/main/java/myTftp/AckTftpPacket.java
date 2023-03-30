@@ -4,7 +4,7 @@ public class AckTftpPacket extends TftpPacket {
     int blockNo;
 
     public AckTftpPacket(int blockNo) {
-        super(Oppcode.ACK);
+        super(4);
         this.blockNo = blockNo;
     }
 
@@ -12,7 +12,7 @@ public class AckTftpPacket extends TftpPacket {
     public byte[] toBytes() {
         byte[] asBytes = new byte[TftpUser.TFTP_CAPACITY];
 
-        asBytes[0] = 4;
+        asBytes[0] = (byte) getOpcode();
         asBytes[2] = (byte) blockNo;
 
         return asBytes;

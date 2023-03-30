@@ -4,10 +4,16 @@ package myTftp;
 import java.util.Arrays;
 
 public abstract class TftpPacket {
-    private Oppcode oppcode;
+    private int opcode;
 
     // Because this is an abstract class, every superclass should have its opcode set
-    public TftpPacket(Oppcode oppcode) {}
+    public TftpPacket(int opcode) {
+        this.opcode = opcode;
+    }
+
+    public int getOpcode() {
+        return opcode;
+    }
 
     public static int extractPacketNo(byte[] bytePacket) {
         if (bytePacket[0] != 3 && bytePacket[0] != 4) {
