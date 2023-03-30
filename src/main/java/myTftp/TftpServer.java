@@ -10,20 +10,17 @@ import static java.lang.Thread.sleep;
 public class TftpServer extends TftpUser implements Runnable {
     private boolean running;
     private Queue<ClientRequest> clientRequests;
-    private RequestHandler requestHandler;
     private ClientRequest currentRequest;
 
     public TftpServer(String name, int portNo) {
         super(name, portNo);
         this.running = false;
         this.clientRequests = new ArrayDeque<>();
-        this.requestHandler = new RequestHandler();
     }
 
     @Override
     public void run() {
         running = true;
-        requestHandler.start();
 
         while (running) {
             // If there's nothing in the queue, wait a short time, and check again
@@ -98,14 +95,6 @@ public class TftpServer extends TftpUser implements Runnable {
 
     public void terminate() {
         running = false;
-    }
-
-    // My God, I am making my life complicated
-    private class RequestHandler extends Thread {
-        @Override
-        public void run() {
-            awaitRequests();
-        }
     }
 
     private class ClientRequest {

@@ -27,7 +27,6 @@ public abstract class TftpUser {
 
         try {
             this.socket = new DatagramSocket(portNo);
-            socket.setSoTimeout(5000);
         } catch (SocketException e) {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
@@ -412,6 +411,15 @@ public abstract class TftpUser {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public boolean setTimeout(int milliseconds) {
+        try {
+            socket.setSoTimeout(milliseconds);
+            return true;
+        } catch (SocketException e) {
+            return false;
+        }
     }
 
     // Do they want to read or write?

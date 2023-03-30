@@ -6,6 +6,7 @@ import java.net.InetAddress;
 public class TftpClient extends TftpUser{
     public TftpClient(String name, int portNo) {
         super(name, portNo);
+        setTimeout(5000);
     }
 
     /**
