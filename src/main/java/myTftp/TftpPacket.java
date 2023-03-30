@@ -4,6 +4,8 @@ package myTftp;
 import java.util.Arrays;
 
 public abstract class TftpPacket {
+    public static byte[] OCTET_TRANSFER_MODE = "octet".getBytes();
+
     private int opcode;
 
     // Because this is an abstract class, every superclass should have its opcode set
