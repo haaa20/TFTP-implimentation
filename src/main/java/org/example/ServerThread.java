@@ -11,6 +11,7 @@ public class ServerThread extends Thread {
 
     public ServerThread() {
         server = new TftpServer("Server", 9000);
+        server.setFileHomePath("serverStorage");
     }
     @Override
     public void run() {
