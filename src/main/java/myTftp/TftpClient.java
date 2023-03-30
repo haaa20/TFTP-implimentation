@@ -17,7 +17,9 @@ public class TftpClient extends TftpUser{
      * @return True if request granted
      */
     public boolean requestRead(InetAddress address, int portNo, String fileName) {
-        request(address, portNo, fileName, WRMode.READ);
+        if (request(address, portNo, fileName, WRMode.READ)) {
+            return true;
+        }
 
         return false;
     }
@@ -30,9 +32,11 @@ public class TftpClient extends TftpUser{
      * @param fileName the name of the file (this includes extension)
      * @return True if request granted
      */
-
     public boolean requestWrite(InetAddress address, int portNo, String fileName) {
-        request(address, portNo, fileName, WRMode.WRITE);
+        if (request(address, portNo, fileName, WRMode.WRITE)){
+            sendFile(address, portNo, fileName);
+            return true;
+        }
 
         return false;
     }
@@ -66,8 +70,6 @@ public class TftpClient extends TftpUser{
         else if (TftpPacket.extractPacketNo(p.getData()) != 0) {
             return false;
         }
-
-
         return true;
     }
 }
