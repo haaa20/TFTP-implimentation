@@ -43,9 +43,9 @@ public abstract class TftpUser {
         int finalPacketNo = calculateNumOfWindows(data.length);
         say("I should be sending " + finalPacketNo + " packets");
 
-        for (int i = 1; i <= finalPacketNo; i++) {
+        for (int i = 0; i <= finalPacketNo; i++) {
             byte[] dataBlock = dataWindow(data, i);
-            say("Sending packet no." + i + " of length " + dataBlock.length);
+            say("Sending packet no." + (i + 1) + " of length " + dataBlock.length);
             sendSingleData(serverAddress, portNo, dataBlock, i);
         }
     }
@@ -77,6 +77,7 @@ public abstract class TftpUser {
      */
     public void sendFile(InetAddress address, int portNo, String pathname) {
         byte[] read = fileManager.read(pathname);
+        String s = new String(read);
         sendData(address, portNo, read);
     }
 
@@ -190,7 +191,6 @@ public abstract class TftpUser {
      */
     public byte[] assembleData(List<byte[]> dataStream) {
         int i = 0;
-        int j = 0;
         int n = dataStream.size() - 1;
         int lastLength = dataStream.get(n).length;
         byte[] assembledData = new byte[n * (TFTP_CAPACITY - 4) + lastLength];
@@ -224,7 +224,7 @@ public abstract class TftpUser {
         rawSend(ackPacket);
     }
 
-    public boolean saveFile(String pathname, byte[] contents) {
+    public boolean saveData(String pathname, byte[] contents) {
         return fileManager.save(pathname, contents);
     }
 

@@ -26,6 +26,8 @@ public class TftpServer extends TftpUser implements Runnable {
             DatagramPacket p = rawReceive();
             int op = TftpPacket.extractOpcode(p);
 
+            String s = new String(p.getData());
+
             if (op == 1) {
                 // A new READ request
             }
@@ -58,7 +60,8 @@ public class TftpServer extends TftpUser implements Runnable {
 
         if (length < TFTP_CAPACITY - 4) {
             // We're done!
-            String completeData = writeStruct.toString();
+            byte[] completeData = writeStruct.complete();
+            saveData(writeStruct.pathname, completeData);
             writeConnections.remove(p.getSocketAddress());
         }
     }
@@ -69,7 +72,7 @@ public class TftpServer extends TftpUser implements Runnable {
     }
 
     /**
-     * Just a lil' structure to keep path names and buffer lists in one place
+     * Just a li'l structure to keep path names and buffer lists in one place
      */
     private class WriteStruct {
         String pathname;
@@ -84,8 +87,8 @@ public class TftpServer extends TftpUser implements Runnable {
             buffer.add(block);
         }
 
-        public String toString() {
-            return new String(assembleData(buffer));
+        public byte[] complete() {
+            return assembleData(buffer);
         }
     }
 }
