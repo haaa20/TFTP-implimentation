@@ -264,7 +264,7 @@ public abstract class TftpUser {
      * @param winNo i
      * @return the window, or an empty array
      */
-    public static byte[] dataWindow(byte[] data, int winNo) {
+    public byte[] dataWindow(byte[] data, int winNo) {
         int winStart = (TFTP_CAPACITY - 4)*winNo;
         int winEnd = (TFTP_CAPACITY - 4)*(winNo+1);
 
@@ -283,12 +283,23 @@ public abstract class TftpUser {
     }
 
     /**
+     * returns the ith data window - where each window is size 408 bytes or less
+     *
+     * @param pathname the path to be read from
+     * @param winNo i
+     * @return the window, or an empty array
+     */
+    public byte[] dataWindow(String pathname, int winNo) {
+        return dataWindow(fileManager.read(pathname), winNo);
+    }
+
+    /**
      * Splits a large list of bytes into segments of the right size to fit in a TFTP data packet - IE 508 byte chunks
      *
      * @param data List of Bytes
      * @return An Iterator object
      */
-    public static Iterator<byte[]> segmentData(byte[] data) {
+    public Iterator<byte[]> windowIterator(byte[] data) {
         // I'm feeling brave let's do an anonymous class ha ha ha!!
         return new Iterator<byte[]>() {
             int i = 0;
@@ -305,6 +316,11 @@ public abstract class TftpUser {
             }
         };
     }
+
+    public Iterator<byte[]> windowIterator(String pathname) {
+        return windowIterator(fileManager.read(pathname));
+    }
+
 
     /**
      * Unwraps the contents of Bytes to an array of primitive bytes

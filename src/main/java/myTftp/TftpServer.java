@@ -30,6 +30,10 @@ public class TftpServer extends TftpUser implements Runnable {
 
             if (op == 1) {
                 // A new READ request
+                // Map the request to a new iterator and acknowledge
+                String pathname = TftpPacket.extractPathname(p);
+                readConnections.put(p.getSocketAddress(), windowIterator(pathname));
+                acknowledge(p);
             }
             else if (op == 2) {
                 // A new WRITE request
@@ -46,6 +50,9 @@ public class TftpServer extends TftpUser implements Runnable {
             else if (op == 4) {
                 // A new ACK packet!
                 // ... Which, remember, will be in response to an outgoing data packet!
+                int blockNo = TftpPacket.extractPacketNo(p);
+
+
             }
         }
     }

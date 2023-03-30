@@ -34,6 +34,10 @@ public abstract class TftpPacket {
         return bytePacket[2];
     }
 
+    public static int extractPacketNo(DatagramPacket p) {
+        return extractPacketNo(p.getData());
+    }
+
     public static byte[] extractData(byte[] bytePacket, int len) {
         if (bytePacket[0] != 3) {
             System.err.println("WARNING: this isn't a DATA packet");
