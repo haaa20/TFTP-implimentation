@@ -8,7 +8,7 @@ import static java.lang.Thread.sleep;
 
 public class TftpServer extends TftpUser implements Runnable {
     private boolean running;
-    private Map<SocketAddress, Iterator<byte[]>> readConnections;
+    private Map<SocketAddress, byte[]> readConnections;
     private Map<SocketAddress, WriteStruct> writeConnections;
 
     public TftpServer(String name, int portNo) {
@@ -30,10 +30,10 @@ public class TftpServer extends TftpUser implements Runnable {
 
             if (op == 1) {
                 // A new READ request
-                // Map the request to a new iterator and acknowledge
+                // Map the request to a new string and send the first block
                 String pathname = TftpPacket.extractPathname(p);
-                readConnections.put(p.getSocketAddress(), windowIterator(pathname));
-                acknowledge(p);
+                readConnections.put(p.getSocketAddress(), readLocal(pathname));
+                sendIthDataPacket(p.getSocketAddress(), 0);
             }
             else if (op == 2) {
                 // A new WRITE request
@@ -51,8 +51,6 @@ public class TftpServer extends TftpUser implements Runnable {
                 // A new ACK packet!
                 // ... Which, remember, will be in response to an outgoing data packet!
                 int blockNo = TftpPacket.extractPacketNo(p);
-
-
             }
         }
     }
@@ -73,6 +71,13 @@ public class TftpServer extends TftpUser implements Runnable {
         }
     }
 
+    private boolean sendIthDataPacket(SocketAddress address, int i) {
+        byte[] data = dataWindow(readConnections.get(address), i);
+        byte[] wrappedData = new DataTftpPacket(i, data).toBytes();
+        DatagramPacket p = new DatagramPacket(wrappedData, wrappedData.length);
+
+        return rawSend(p);
+    }
 
     public void terminate() {
         running = false;

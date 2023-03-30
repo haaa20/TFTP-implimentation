@@ -412,6 +412,10 @@ public abstract class TftpUser {
         System.out.println(name + ": " + message);
     }
 
+    protected final byte[] readLocal(String pathname) {
+        return fileManager.read(pathname);
+    }
+
     public void setFileHomePath(String homePath) {
         fileManager.setHomepath(homePath);
     }
