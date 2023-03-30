@@ -20,7 +20,11 @@ public class ServerThread extends Thread {
 
         // DO STUFF BELOW
         ArrayList<byte[]> buf = new ArrayList<>();
-        server.setDebug(true);
+        String message;
+
         server.receiveData(buf);
+        message = new String(server.assembleData(buf));
+
+        System.out.println(message);
     }
 }

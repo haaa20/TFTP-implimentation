@@ -141,6 +141,28 @@ public abstract class TftpUser {
     }
 
     /**
+     * Takes a list of data chunks and assembles them to a continuous array of bytes
+     * <p>
+     * Designed to be used on a data stream that has been written to by the receiveData method. if the list does not
+     * conform to the expected structure an exception may be thrown
+     *
+     * @param dataStream The list of data chunks
+     * @return The reassembled array of bytes
+     */
+    public byte[] assembleData(List<byte[]> dataStream) {
+        int i = 0;
+        int n = dataStream.size() - 1;
+        byte[] assembledData = new byte[(n * TFTP_CAPACITY - 4) + dataStream.get(n).length];
+
+        for (byte[] block: dataStream) {
+            System.arraycopy(block, 0, assembledData, i * (TFTP_CAPACITY - 4), block.length);
+            i++;
+        }
+
+        return assembledData;
+    }
+
+    /**
      * Acknowledge the given packet (do this IMMEDIATELY after the packet is received to minimise spaghetti please)
      *
      * @param p DatagramPacket

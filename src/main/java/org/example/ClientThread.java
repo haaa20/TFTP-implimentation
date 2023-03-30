@@ -20,9 +20,6 @@ public class ClientThread extends Thread {
     public void run() {
         client.say("Online...");
 
-        fileManager.open("someText.txt");
-        String message = fileManager.readFull();
-
         InetAddress serverAddress;
         try {
             serverAddress = InetAddress.getByName("localhost");
@@ -31,7 +28,9 @@ public class ClientThread extends Thread {
         }
 
         // DO STUFF BELOW
-        client.setDebug(true);
+        fileManager.open("someText.txt");
+        String message = fileManager.readFull();
+
         client.sendData(serverAddress, 9000, message.getBytes());
     }
 }
