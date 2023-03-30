@@ -151,8 +151,10 @@ public abstract class TftpUser {
      */
     public byte[] assembleData(List<byte[]> dataStream) {
         int i = 0;
+        int j = 0;
         int n = dataStream.size() - 1;
-        byte[] assembledData = new byte[(n * TFTP_CAPACITY - 4) + dataStream.get(n).length];
+        int lastLength = dataStream.get(n).length;
+        byte[] assembledData = new byte[n * (TFTP_CAPACITY - 4) + lastLength];
 
         for (byte[] block: dataStream) {
             System.arraycopy(block, 0, assembledData, i * (TFTP_CAPACITY - 4), block.length);
