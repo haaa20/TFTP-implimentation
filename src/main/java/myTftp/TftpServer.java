@@ -8,6 +8,15 @@ import java.util.Queue;
 import static java.lang.Thread.sleep;
 
 public class TftpServer extends TftpUser implements Runnable {
+    /*
+    I THINK I KNOW WHAT THE PROBLEM IS
+
+    When the client sends their first data packet after the request has been acknowledged, the request handler thread
+    gets there first before the server's receiveAndAssemble method gets a chance.
+
+    As the data packet isn't a request, the request handler doesn't know what to do with it. It send an error message,
+    and the data packet is discarded.
+     */
     private boolean running;
     private Queue<ClientRequest> clientRequests;
     private RequestHandler requestHandler;
@@ -69,6 +78,9 @@ public class TftpServer extends TftpUser implements Runnable {
 
         while (running) {
             request = rawReceive();
+
+            if (request == null) {continue;}
+
             opcode = TftpPacket.extractOpcode(request);
 
             if (opcode == 1) {
