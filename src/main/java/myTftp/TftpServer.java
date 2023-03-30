@@ -9,7 +9,7 @@ import static java.lang.Thread.sleep;
 public class TftpServer extends TftpUser implements Runnable {
     private boolean running;
     private Map<SocketAddress, Iterator<byte[]>> readConnections;
-    private Map<SocketAddress, List<byte[]>> writeConnections;
+    private Map<SocketAddress, WriteStruct> writeConnections;
 
     public TftpServer(String name, int portNo) {
         super(name, portNo);
@@ -32,7 +32,8 @@ public class TftpServer extends TftpUser implements Runnable {
             else if (op == 2) {
                 // A new WRITE request
                 // Map the request to a new buffer list, and acknowledge
-                writeConnections.put(p.getSocketAddress(), new LinkedList<>());
+                WriteStruct newWriteStruct = new WriteStruct(TftpPacket.extractPathname(p));
+                writeConnections.put(p.getSocketAddress(), newWriteStruct);
                 acknowledge(p);
             }
             else if (op == 3) {
@@ -50,14 +51,14 @@ public class TftpServer extends TftpUser implements Runnable {
     private void handleDataPacket(DatagramPacket p) {
         // Assume that the socket has done its job and a buffer list is in place
         byte[] data = TftpPacket.extractData(p.getData(), p.getLength());
-        List<byte[]> bufferList = writeConnections.get(p.getSocketAddress());
         int length = data.length;
+        WriteStruct writeStruct = writeConnections.get(p.getSocketAddress());
 
-        bufferList.add(data);
+        writeStruct.add(data);
 
         if (length < TFTP_CAPACITY - 4) {
             // We're done!
-            String completeData = new String(assembleData(bufferList));
+            String completeData = writeStruct.toString();
             writeConnections.remove(p.getSocketAddress());
         }
     }
@@ -67,4 +68,24 @@ public class TftpServer extends TftpUser implements Runnable {
         running = false;
     }
 
+    /**
+     * Just a lil' structure to keep path names and buffer lists in one place
+     */
+    private class WriteStruct {
+        String pathname;
+        List<byte[]> buffer;
+
+        public WriteStruct(String pathname) {
+            this.pathname = pathname;
+            this.buffer = new LinkedList<>();
+        }
+
+        public void add(byte[] block) {
+            buffer.add(block);
+        }
+
+        public String toString() {
+            return new String(assembleData(buffer));
+        }
+    }
 }
