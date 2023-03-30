@@ -43,8 +43,8 @@ public abstract class TftpUser {
         int finalPacketNo = calculateNumOfWindows(data.length);
         say("I should be sending " + finalPacketNo + " packets");
 
-        for (int i = 0; i <= finalPacketNo; i++) {
-            say("Sending packet no." + (i+1));
+        for (int i = 1; i < finalPacketNo; i++) {
+            say("Sending packet no." + (i));
             byte[] dataBlock = dataWindow(data, i);
             sendSingleData(serverAddress, portNo, dataBlock, i);
         }
@@ -288,21 +288,20 @@ public abstract class TftpUser {
      * @param data List of Bytes
      * @return An Iterator object
      */
-    public static Iterator<Byte[]> segmentData(List<Byte> data) {
+    public static Iterator<byte[]> segmentData(byte[] data) {
         // I'm feeling brave let's do an anonymous class ha ha ha!!
-        return new Iterator<Byte[]>() {
+        return new Iterator<byte[]>() {
             int i = 0;
+            int n = calculateNumOfWindows(data.length);
 
             @Override
             public boolean hasNext() {
-                return (i < data.size());
+                return (i == n);
             }
 
             @Override
-            public Byte[] next() {
-                Object[] dataSegment = data.subList(i, Math.min(i+408, data.size())).toArray();
-                i += 408;
-                return Arrays.copyOf(dataSegment, dataSegment.length, Byte[].class);
+            public byte[] next() {
+                return dataWindow(data, i++);
             }
         };
     }
