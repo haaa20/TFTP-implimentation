@@ -51,9 +51,11 @@ public class TftpServer extends TftpUser implements Runnable {
         // Assume that the socket has done its job and a buffer list is in place
         byte[] data = TftpPacket.extractData(p.getData(), p.getLength());
         List<byte[]> bufferList = writeConnections.get(p.getSocketAddress());
+        int length = data.length;
+
         bufferList.add(data);
 
-        if (data.length < TFTP_CAPACITY - 4) {
+        if (length < TFTP_CAPACITY - 4) {
             // We're done!
             String completeData = new String(assembleData(bufferList));
             writeConnections.remove(p.getSocketAddress());

@@ -27,7 +27,7 @@ public abstract class TftpPacket {
         if (opcode == 1 || opcode == 2) {
             return 0;
         }
-        if (opcode < 4) {
+        else if (opcode > 4) {
             System.err.println("WARNING: unexpected opcode");
         }
 

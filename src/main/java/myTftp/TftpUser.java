@@ -43,9 +43,9 @@ public abstract class TftpUser {
         int finalPacketNo = calculateNumOfWindows(data.length);
         say("I should be sending " + finalPacketNo + " packets");
 
-        for (int i = 1; i < finalPacketNo; i++) {
-            say("Sending packet no." + (i));
+        for (int i = 1; i <= finalPacketNo; i++) {
             byte[] dataBlock = dataWindow(data, i);
+            say("Sending packet no." + i + " of length " + dataBlock.length);
             sendSingleData(serverAddress, portNo, dataBlock, i);
         }
     }
