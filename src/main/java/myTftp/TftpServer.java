@@ -24,6 +24,12 @@ public class TftpServer extends TftpUser implements Runnable {
             }
             else if (opcode == 2) {
                 // WRITE REQUEST
+
+                // Acknowledge the request and wait for the client to begin sending data
+                acknowledge(request);
+                byte[] writeBuf = receiveAndAssemble();
+
+                // Save the data we have received
             }
             else {
                 sendError(request, "Not a read or write request");

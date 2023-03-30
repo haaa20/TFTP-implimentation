@@ -37,8 +37,25 @@ public abstract class TftpPacket {
         return Arrays.copyOfRange(bytePacket, 4, len);
     }
 
+    public static String extractPathname(byte[] bytePacket) {
+        int opcode = extractOpcode(bytePacket);
+        int i = 2;
+        if (opcode != 1 && opcode != 2) {
+            System.err.println("WARNING: This isn't a WRQ or RRQ packet");
+        }
+
+        // iterate through bytePacket from i until we find the 0 byte that signifies the end of the pathname
+        while (bytePacket[i] != 0) {i++;}
+
+        return new String(Arrays.copyOfRange(bytePacket, 2, i));
+    }
+
     public static int extractOpcode(DatagramPacket p) {
         return extractOpcode(p.getData());
+    }
+
+    public static String extractPathname(DatagramPacket p) {
+        return extractPathname(p.getData());
     }
 
     public abstract byte[] toBytes();
