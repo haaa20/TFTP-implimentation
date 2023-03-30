@@ -8,12 +8,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class ClientThread extends Thread {
-    private FileManager fileManager;
     private TftpClient client;
 
     public ClientThread() {
-        fileManager = new FileManager("clientStorage");
         client = new TftpClient("Client", 9001);
+        client.setFileHomePath("clientStorage");
     }
 
     @Override
@@ -28,10 +27,9 @@ public class ClientThread extends Thread {
         }
 
         // DO STUFF BELOW
-        fileManager.open("someText.txt");
-        String message = fileManager.readFull();
+        String message = "Nothing to say";
 
-        client.sendData(serverAddress, 9000, message.getBytes());
+        client.sendFile(serverAddress, 9000, "someText.txt");
     }
 }
 

@@ -22,6 +22,7 @@ public abstract class TftpUser {
         this.name = name;
         this.buf = new byte[TFTP_CAPACITY];
         this.packet = new DatagramPacket(buf, TFTP_CAPACITY);
+        this.fileManager = new FileManager();
         this.debug = false;
 
         try {
@@ -88,6 +89,11 @@ public abstract class TftpUser {
             i++;
         }
         return true;
+    }
+
+    public void sendFile(InetAddress address, int portNo, String filePath) {
+        byte[] read = fileManager.read(filePath);
+        sendData(address, portNo, read);
     }
 
     /**
@@ -353,6 +359,14 @@ public abstract class TftpUser {
     public final void say(String message) {
         if (!debug) {return;}
         System.out.println(name + ": " + message);
+    }
+
+    public void setFileHomePath(String homePath) {
+        fileManager.setHomePath(homePath);
+    }
+
+    public String getFileHomePath(String homePath) {
+        return fileManager.getHomePath();
     }
 
     public boolean isDebug() {

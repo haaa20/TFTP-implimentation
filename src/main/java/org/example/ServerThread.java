@@ -7,11 +7,9 @@ import myTftp.TftpUser;
 import java.util.ArrayList;
 
 public class ServerThread extends Thread {
-    private FileManager fileManager;
     private TftpServer server;
 
     public ServerThread() {
-        fileManager = new FileManager("clientStorage");
         server = new TftpServer("Server", 9000);
     }
     @Override

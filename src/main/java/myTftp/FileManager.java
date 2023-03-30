@@ -3,61 +3,53 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Scanner;
 
 public class FileManager {
     private String homePath;
     private File selectedFile;
-    private FileWriter writer;
-    private Scanner reader;
 
     public FileManager(String homePath) {
         this.homePath = homePath;
     }
 
-    public void open(String name) {
-        selectedFile = new File(homePath+"/"+name);
+    public FileManager() {
 
-        if (!selectedFile.exists()) {
-            System.err.println("There was a problem: that file does not exist");
-            return;
-        }
     }
 
-    public String readFull() {
-        String strOut = "";
-
+    /**
+     * Returns the given file encoded as an array of bytes - ready for transmission
+     *
+     * @param file File name or path
+     * @return file as byte[]
+     */
+    public byte[] read(String file) {
+        selectFile(file);
         try {
-            reader = new Scanner(selectedFile);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("No file to read from");
-        }
-
-        strOut += reader.nextLine();
-        while (reader.hasNextLine()) {
-            strOut += "\n";
-            strOut += reader.nextLine();
-        }
-
-        return strOut;
-    }
-
-    public void write(String data) {
-        try {
-            writer.write(data);
-            writer.close();
+            return Files.readAllBytes(selectedFile.toPath());
         } catch (IOException e) {
-            System.err.println("Could not write to " + selectedFile.getPath());
-        } catch (NullPointerException e) {
-            System.err.println("Tried to write before opening a file");
+            throw new RuntimeException(e);
         }
     }
 
-    private Boolean createFile() {
-        try {
-            return selectedFile.createNewFile();
-        } catch (IOException e) {
-            return false;
-        }
+    public void write(String dest) {
+
+    }
+
+    public void write() {
+        write("");
+    }
+
+    private void selectFile(String filePath) {
+        selectedFile = new File(homePath + "/" + filePath);
+    }
+
+    public String getHomePath() {
+        return homePath;
+    }
+
+    public void setHomePath(String homePath) {
+        this.homePath = homePath;
     }
 }
