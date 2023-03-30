@@ -17,8 +17,6 @@ public class ClientThread extends Thread {
 
     @Override
     public void run() {
-        client.say("Online...");
-
         InetAddress serverAddress;
         try {
             serverAddress = InetAddress.getByName("localhost");
@@ -29,7 +27,7 @@ public class ClientThread extends Thread {
         // DO STUFF BELOW
         String message = "Nothing to say";
 
-        client.sendFile(serverAddress, 9000, "Stoney4.png");
+        client.sendFile(serverAddress, 9000, "someText.txt");
     }
 }
 

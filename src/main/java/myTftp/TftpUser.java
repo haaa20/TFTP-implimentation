@@ -97,7 +97,9 @@ public abstract class TftpUser {
      * @return The data as a continuous byte array
      */
     public byte[] receiveAndAssemble() {
-
+        List<byte[]> blockBuf = new ArrayList();
+        receiveData(blockBuf);
+        return assembleData(blockBuf);
     }
 
     /**

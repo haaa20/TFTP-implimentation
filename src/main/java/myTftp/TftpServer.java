@@ -28,8 +28,6 @@ public class TftpServer extends TftpUser implements Runnable {
             else {
                 sendError(request, "Not a read or write request");
             }
-
-            rec
         }
     }
 

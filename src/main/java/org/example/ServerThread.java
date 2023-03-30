@@ -17,11 +17,9 @@ public class ServerThread extends Thread {
         server.say("Online...");
 
         // DO STUFF BELOW
-        ArrayList<byte[]> buf = new ArrayList<>();
         String message;
 
-        server.receiveData(buf);
-        message = new String(server.assembleData(buf));
+        message = new String(server.receiveAndAssemble());
 
         System.out.println(message);
     }
