@@ -27,6 +27,7 @@ public abstract class TftpUser {
 
         try {
             this.socket = new DatagramSocket(portNo);
+            socket.setSoTimeout(5000);
         } catch (SocketException e) {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
@@ -144,6 +145,20 @@ public abstract class TftpUser {
 
         // wait for an acknowledgement
         packet = rawReceive();
+
+        // time for some ERROR HANDLING
+        while (packet == null) {
+            packet = freshPacket();
+            packet.setAddress(address);
+            packet.setPort(port);
+
+            if (!rawSend(packet)) {
+                return -1;
+            }
+
+            packet = rawReceive();
+        }
+
         buf = packet.getData();
         int n = TftpPacket.extractPacketNo(buf);
         if (n == blockNo) {
@@ -353,14 +368,14 @@ public abstract class TftpUser {
     }
 
     /**
-     * Waits to receive a packet, and returns it. Does not acknowledge
+     * Waits to receive a packet, and returns it. Does not acknowledge. Returns null if unsuccessful
      */
     protected final DatagramPacket rawReceive() {
         // This SHOULD be the only method to directly use socket.receive()
         try {
             socket.receive(packet);
         } catch (IOException e) {
-            throw new RuntimeException("Could not receive packet");
+            return null;
         }
         return packet;
     }
@@ -401,4 +416,8 @@ public abstract class TftpUser {
 
     // Do they want to read or write?
     protected enum WRMode {READ, WRITE}
+
+    protected final DatagramPacket freshPacket() {
+        return new DatagramPacket(buf, TFTP_CAPACITY);
+    }
 }
