@@ -16,25 +16,34 @@ public class TftpServer extends TftpUser implements Runnable {
     }
 
     private void awaitRequests() {
+        // Ingredients for one homemade ClientRequest...
+        DatagramPacket request;
+        int opcode;
+        String pathname;
+        WRMode wr;
+
         while (running) {
-            DatagramPacket request = rawReceive();
-            int opcode = TftpPacket.extractOpcode(request);
+            request = rawReceive();
+            opcode = TftpPacket.extractOpcode(request);
 
             if (opcode == 1) {
                 // READ REQUEST
+                pathname = TftpPacket.extractPathname(request);
+                wr = WRMode.READ;
+                acknowledge(request);
             }
             else if (opcode == 2) {
                 // WRITE REQUEST
-
-                // Acknowledge the request and wait for the client to begin sending data
+                pathname = TftpPacket.extractPathname(request);
+                wr = WRMode.WRITE;
                 acknowledge(request);
-                byte[] writeBuf = receiveAndAssemble();
-
-                // Save the data we have received
             }
             else {
                 sendError(request, "Not a read or write request");
+                continue;
             }
+
+            clientRequests.add(new ClientRequest(pathname, wr, request));
         }
     }
 
