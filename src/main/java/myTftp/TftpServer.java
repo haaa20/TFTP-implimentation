@@ -31,6 +31,7 @@ public class TftpServer extends TftpUser implements Runnable {
             if (op == 1) {
                 // A new READ request
                 // Map the request to a new string and send the first block
+                say("received write request");
                 String pathname = TftpPacket.extractPathname(p);
                 readConnections.put(p.getSocketAddress(), readLocal(pathname));
                 sendIthDataPacket(p.getSocketAddress(), 0);
@@ -38,6 +39,7 @@ public class TftpServer extends TftpUser implements Runnable {
             else if (op == 2) {
                 // A new WRITE request
                 // Map the request to a new buffer list, and acknowledge
+                say("received write request");
                 WriteStruct newWriteStruct = new WriteStruct(TftpPacket.extractPathname(p));
                 writeConnections.put(p.getSocketAddress(), newWriteStruct);
                 acknowledge(p);
@@ -75,12 +77,30 @@ public class TftpServer extends TftpUser implements Runnable {
         byte[] data = dataWindow(readConnections.get(address), i);
         byte[] wrappedData = new DataTftpPacket(i, data).toBytes();
         DatagramPacket p = new DatagramPacket(wrappedData, wrappedData.length);
+        p.setSocketAddress(address);
 
         return rawSend(p);
     }
 
     public void terminate() {
         running = false;
+    }
+
+    private class ReadStruct {
+        Iterator<byte[]> iterator;
+        int i;
+
+        public ReadStruct(String pathname) {
+        }
+
+        public byte[] next() {
+            i++;
+            return iterator.next();
+        }
+
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
     }
 
     /**

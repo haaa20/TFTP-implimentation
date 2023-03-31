@@ -9,7 +9,6 @@ public class TftpClient extends TftpUser{
     private List<byte[]> readBuffer;
     public TftpClient(String name, int portNo) {
         super(name, portNo);
-        setTimeout(2000);
         readBuffer = new LinkedList<>();
     }
 

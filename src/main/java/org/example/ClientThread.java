@@ -30,6 +30,8 @@ public class ClientThread extends Thread {
         String message = "Nothing to say";
 
         client.requestWrite(serverAddress, 9000, "lyrics.xml");
+
+        client.requestRead(serverAddress, 9000, "steamedHams.txt");
     }
 }
 
