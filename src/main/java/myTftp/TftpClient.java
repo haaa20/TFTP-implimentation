@@ -25,8 +25,9 @@ public class TftpClient extends TftpUser{
 
         receiveData(readBuffer);
         saveData(pathname, assembleData(readBuffer));
+        readBuffer.clear();
 
-        return false;
+        return true;
     }
 
     /**
