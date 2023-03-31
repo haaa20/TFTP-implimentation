@@ -40,6 +40,10 @@ public class TftpServer extends TftpUser implements Runnable {
                 // Map the request to a new handler thread, and acknowledge (which is done from INSIDE the new thread)
                 WriteHandler handler = new WriteHandler(p);
                 handler.start();
+
+                // Ack the initial packet, which should prompt the client to begin sending data
+                writeConnections.put(p.getSocketAddress(), handler);
+                acknowledge(p);
             }
         }
     }
@@ -79,7 +83,7 @@ public class TftpServer extends TftpUser implements Runnable {
         DatagramSocket s = writeConnections.get(address).tempSocket;
 
         // Preparing the ack packet
-        DatagramPacket ackPacket = newAck(p);
+        DatagramPacket ackPacket = newAck(p.getSocketAddress(), 0);
 
         // Sending the ack packet
         rawSend(ackPacket, s);
@@ -122,10 +126,6 @@ public class TftpServer extends TftpUser implements Runnable {
             } catch (SocketException e) {
                 throw new RuntimeException(e);
             }
-
-            // Ack the initial packet, which should prompt the client to begin sending data
-            writeConnections.put(initP.getSocketAddress(), this);
-            acknowledge(initP);
         }
 
         @Override

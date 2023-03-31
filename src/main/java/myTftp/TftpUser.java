@@ -1,10 +1,7 @@
 package myTftp;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.*;
 
 
@@ -213,21 +210,20 @@ public abstract class TftpUser {
      */
     protected void acknowledge(DatagramPacket p) {
         // Preparing the ack packet
-        DatagramPacket ackPacket = newAck(p);
+        int ackNo = TftpPacket.extractPacketNo(p);
+        DatagramPacket ackPacket = newAck(p.getSocketAddress(), ackNo);
 
         // Sending the ack packet
         rawSend(ackPacket);
     }
 
-    protected final DatagramPacket newAck(DatagramPacket p) {
-        int blockNo = TftpPacket.extractPacketNo(p.getData());
+    protected final DatagramPacket newAck(SocketAddress address, int blockNo) {
         AckTftpPacket ackData = new AckTftpPacket(blockNo);
         DatagramPacket ackPacket = new DatagramPacket(ackData.toBytes(), 4);
         say("Received packet no." + blockNo);
 
         // Addressing the acknowledgement packet
-        ackPacket.setAddress(p.getAddress());
-        ackPacket.setPort(p.getPort());
+        ackPacket.setSocketAddress(address);
         return ackPacket;
     }
 
