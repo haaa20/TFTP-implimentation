@@ -11,7 +11,7 @@ public class ClientThread extends Thread {
     private TftpClient client;
 
     public ClientThread() {
-        client = new TftpClient("Client", 9001);
+        client = new TftpClient("Client", 9002);
         client.setFileHomePath("clientStorage");
     }
 
