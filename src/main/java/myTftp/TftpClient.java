@@ -7,7 +7,7 @@ public class TftpClient extends TftpUser{
 
     public TftpClient(String name, int portNo) {
         super(name, portNo);
-        setTimeout(5000);
+        setTimeout(1000);
     }
 
     /**
@@ -61,7 +61,7 @@ public class TftpClient extends TftpUser{
 
         // send the file out and reset port to the new port number
         int serverTid = p.getPort();
-        System.out.println("Sending data to port " + serverTid);
+        say("Sending data to port " + serverTid);
         sendFile(address, serverTid, fileName);
         resetPort();
         return true;

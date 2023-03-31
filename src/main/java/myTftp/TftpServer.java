@@ -135,8 +135,9 @@ public class TftpServer extends TftpUser implements Runnable {
             while (running) {
                 // get a packet
                 // TODO error handling
-                System.out.println("Waiting for data to be sent to port " + tempSocket.getLocalPort());
+                say("Waiting for data to be sent to port " + tempSocket.getLocalPort());
                 p = rawReceive(tempSocket);
+                say("Received packet from " + p.getPort());
 
                 // check p is from client
                 if (!p.getSocketAddress().equals(clientAddress)) {

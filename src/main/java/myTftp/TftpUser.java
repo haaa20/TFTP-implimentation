@@ -15,6 +15,7 @@ public abstract class TftpUser {
     private byte[] buf;
     private boolean debug;
     private FileManager fileManager;
+    private int timeout;
 
     public TftpUser(String name, int portNo) {
         this.name = name;
@@ -406,6 +407,7 @@ public abstract class TftpUser {
     protected final DatagramPacket rawReceive() {
         // This SHOULD be the only method to directly use socket.receive()
         try {
+            setSocketTimeout(socket);
             socket.receive(packet);
         } catch (IOException e) {
             return null;
@@ -501,9 +503,13 @@ public abstract class TftpUser {
         this.debug = debug;
     }
 
-    public boolean setTimeout(int milliseconds) {
+    public void setTimeout(int milliseconds) {
+        this.timeout = milliseconds;
+    }
+
+    private boolean setSocketTimeout(DatagramSocket s) {
         try {
-            socket.setSoTimeout(milliseconds);
+            s.setSoTimeout(timeout);
             return true;
         } catch (SocketException e) {
             return false;
