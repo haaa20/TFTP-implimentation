@@ -45,6 +45,12 @@ public abstract class TftpPacket {
         return Arrays.copyOfRange(bytePacket, 4, len);
     }
 
+    public static byte[] extractData(DatagramPacket p) {
+        byte[] bytePacket = p.getData();
+        int len = p.getLength();
+        return extractData(bytePacket, len);
+    }
+
     public static String extractPathname(byte[] bytePacket) {
         int opcode = extractOpcode(bytePacket);
         int i = 2;
