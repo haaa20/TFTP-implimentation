@@ -117,13 +117,10 @@ public class TftpServer extends TftpUser implements Runnable {
             boolean tryAndBind = true;
 
             // Search for a free tid to bind to
-            while (tryAndBind) {
-                try {
-                    this.tempSocket = new DatagramSocket(tid);
-                    tryAndBind = false;
-                } catch (SocketException e) {
-                    tid = randomTid();
-                }
+            try {
+                this.tempSocket = new DatagramSocket(tid);
+            } catch (SocketException e) {
+                throw new RuntimeException(e);
             }
 
             // Ack the initial packet, which should prompt the client to begin sending data
@@ -138,7 +135,7 @@ public class TftpServer extends TftpUser implements Runnable {
             while (running) {
                 // get a packet
                 // TODO error handling
-                System.out.println("Waiting for data to be sent to port " + tempSocket.getPort());
+                System.out.println("Waiting for data to be sent to port " + tempSocket.getLocalPort());
                 p = rawReceive(tempSocket);
 
                 // check p is from client
