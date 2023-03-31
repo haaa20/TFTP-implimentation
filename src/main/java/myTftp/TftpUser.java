@@ -378,6 +378,8 @@ public abstract class TftpUser {
             return true;
         } catch (IOException e) {
             return false;
+        } catch (NullPointerException e) {
+            return false;
         }
     }
 

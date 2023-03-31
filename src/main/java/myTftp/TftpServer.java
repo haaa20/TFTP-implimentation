@@ -76,6 +76,8 @@ public class TftpServer extends TftpUser implements Runnable {
     private boolean sendIthDataPacket(SocketAddress address, int i) {
         byte[] data = dataWindow(readConnections.get(address), i);
         byte[] wrappedData = new DataTftpPacket(i, data).toBytes();
+
+        // create and address the packet
         DatagramPacket p = new DatagramPacket(wrappedData, wrappedData.length);
         p.setSocketAddress(address);
 
