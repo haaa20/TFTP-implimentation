@@ -56,7 +56,7 @@ public class TftpServer extends TftpUser implements Runnable {
             else if (op == 4) {
                 // A new ACK packet!
                 // ... Which, remember, will be in response to an outgoing data packet!
-                int blockNo = TftpPacket.extractPacketNo(p);
+                handleAckPacket(p);
             }
         }
     }
