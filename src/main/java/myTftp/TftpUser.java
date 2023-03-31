@@ -11,6 +11,7 @@ import java.util.*;
 public abstract class TftpUser {
     public static int TFTP_CAPACITY = 512;
 
+    private int originalPortNo;
     private String name;
     private DatagramPacket packet;
     private DatagramSocket socket;
@@ -30,6 +31,7 @@ public abstract class TftpUser {
         } catch (SocketException e) {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
+        this.originalPortNo = portNo;
     }
 
     /**
@@ -412,6 +414,11 @@ public abstract class TftpUser {
         System.out.println(name + ": " + message);
     }
 
+    protected final int randomTid() {
+        int tid = (int) (originalPortNo + Math.random()*500);
+        return tid;
+    }
+
     /**
      * Reassigns the socket of this user to the given port number
      *
@@ -425,6 +432,22 @@ public abstract class TftpUser {
         } catch (SocketException e) {
             return false;
         }
+    }
+
+    /**
+     * resets the port to the original port number
+     * @return true if successful
+     */
+    public final boolean resetPort() {
+        return setPort(originalPortNo);
+    }
+
+    public int getOriginalPortNo() {
+        return originalPortNo;
+    }
+
+    public void setOriginalPortNo(int originalPortNo) {
+        this.originalPortNo = originalPortNo;
     }
 
     protected final byte[] readLocal(String pathname) {

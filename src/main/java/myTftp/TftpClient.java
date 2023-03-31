@@ -2,14 +2,11 @@ package myTftp;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.util.Random;
 
 public class TftpClient extends TftpUser{
 
-    int originalPortNo;
     public TftpClient(String name, int portNo) {
         super(name, portNo);
-        this.originalPortNo = portNo;
         setTimeout(5000);
     }
 
@@ -37,7 +34,7 @@ public class TftpClient extends TftpUser{
      */
     public boolean requestWrite(InetAddress address, int portNo, String fileName) {
         // Generate a temporary TID
-        int tid = (int) (originalPortNo + (Math.random() * 100));
+        int tid = randomTid();
         if (!setPort(tid)) {return false;}
 
         request(address, portNo, fileName, WRMode.WRITE);
@@ -62,9 +59,10 @@ public class TftpClient extends TftpUser{
             return false;
         }
 
-        // send the file out and reset port
-        sendFile(address, portNo, fileName);
-        setPort(originalPortNo);
+        // send the file out and reset port to the new port number
+        int serverTid = p.getPort();
+        sendFile(address, serverTid, fileName);
+        resetPort();
         return true;
     }
 
