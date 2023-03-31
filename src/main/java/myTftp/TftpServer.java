@@ -53,6 +53,7 @@ public class TftpServer extends TftpUser implements Runnable {
         byte[] data = TftpPacket.extractData(p.getData(), p.getLength());
         int length = data.length;
         buffer.add(data);
+        acknowledge(p);
 
         if (length < TFTP_CAPACITY - 4) {
             // We're done!
@@ -70,8 +71,16 @@ public class TftpServer extends TftpUser implements Runnable {
         return rawSend(p);
     }
 
-    public void terminate() {
-        running = false;
+    // Send and acknowledgment from the corresponding handler port
+    @Override
+    protected void acknowledge(DatagramPacket p) {
+        DatagramSocket s = writeConnections.get(p.getSocketAddress()).tempSocket;
+
+        // Preparing the ack packet
+        DatagramPacket ackPacket = newAck(p);
+
+        // Sending the ack packet
+        rawSend(ackPacket, s);
     }
 
     /**
@@ -116,7 +125,7 @@ public class TftpServer extends TftpUser implements Runnable {
             }
 
             // Ack the initial packet, which should prompt the client to begin sending data
-            acknowledge(p);
+            acknowledge(initP);
         }
 
         @Override

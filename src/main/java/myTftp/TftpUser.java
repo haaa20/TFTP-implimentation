@@ -213,6 +213,13 @@ public abstract class TftpUser {
      */
     protected void acknowledge(DatagramPacket p) {
         // Preparing the ack packet
+        DatagramPacket ackPacket = newAck(p);
+
+        // Sending the ack packet
+        rawSend(ackPacket);
+    }
+
+    protected final DatagramPacket newAck(DatagramPacket p) {
         int blockNo = TftpPacket.extractPacketNo(p.getData());
         AckTftpPacket ackData = new AckTftpPacket(blockNo);
         DatagramPacket ackPacket = new DatagramPacket(ackData.toBytes(), 4);
@@ -221,9 +228,7 @@ public abstract class TftpUser {
         // Addressing the acknowledgement packet
         ackPacket.setAddress(p.getAddress());
         ackPacket.setPort(p.getPort());
-
-        // Sending the ack packet
-        rawSend(ackPacket);
+        return ackPacket;
     }
 
     public boolean saveData(String pathname, byte[] contents) {
@@ -377,6 +382,22 @@ public abstract class TftpUser {
         // This SHOULD be the only method to directly use socket.send()
         try {
             socket.send(p);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+    /**
+     * Sends the given packet out of the  given socket
+     *
+     * @param p DatagramPacket
+     * @param s Socket
+     * @return True if packet successfully sent out
+     */
+    protected final boolean rawSend(DatagramPacket p, DatagramSocket s) {
+        // This SHOULD be the only method to directly use socket.send()
+        try {
+            s.send(p);
             return true;
         } catch (IOException e) {
             return false;
