@@ -42,16 +42,6 @@ public class TftpServer extends TftpUser implements Runnable {
                 writeConnections.put(p.getSocketAddress(), newWriteStruct);
                 acknowledge(p);
             }
-            else if (op == 3) {
-                // A new DATA packet
-                handleDataPacket(p);
-                acknowledge(p);
-            }
-            else if (op == 4) {
-                // A new ACK packet!
-                // ... Which, remember, will be in response to an outgoing data packet!
-                int blockNo = TftpPacket.extractPacketNo(p);
-            }
         }
     }
 
@@ -81,6 +71,28 @@ public class TftpServer extends TftpUser implements Runnable {
 
     public void terminate() {
         running = false;
+    }
+
+    /**
+     * One of these is launched for each unique client-rrq, and is responsible for
+     * handling the request until completion
+     */
+    private class ReadHandler extends Thread {
+        @Override
+        public void run() {
+            super.run();
+        }
+    }
+
+    /**
+     * One of these is launched for each unique client-wrq, and is responsible for
+     * handling the request until completion
+     */
+    private class WriteHandler extends Thread {
+        @Override
+        public void run() {
+            super.run();
+        }
     }
 
     /**

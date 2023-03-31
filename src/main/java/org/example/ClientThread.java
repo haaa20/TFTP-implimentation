@@ -29,7 +29,7 @@ public class ClientThread extends Thread {
         // DO STUFF BELOW
         String message = "Nothing to say";
 
-        client.requestWrite(serverAddress, 9000, "lyrics.xml");
+        client.requestWrite(serverAddress, 9000, "Stoney4.png");
     }
 }
 
