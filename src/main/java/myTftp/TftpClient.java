@@ -2,10 +2,14 @@ package myTftp;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.Random;
 
 public class TftpClient extends TftpUser{
+
+    int originalPortNo;
     public TftpClient(String name, int portNo) {
         super(name, portNo);
+        this.originalPortNo = portNo;
         setTimeout(5000);
     }
 
@@ -32,6 +36,10 @@ public class TftpClient extends TftpUser{
      * @return True if request granted
      */
     public boolean requestWrite(InetAddress address, int portNo, String fileName) {
+        // Generate a temporary TID
+        int tid = (int) (originalPortNo + (Math.random() * 100));
+        if (!setPort(tid)) {return false;}
+
         request(address, portNo, fileName, WRMode.WRITE);
         DatagramPacket p = rawReceive();
 
@@ -52,9 +60,10 @@ public class TftpClient extends TftpUser{
             return false;
         }
 
+        // send the file out and reset port
         sendFile(address, portNo, fileName);
-
-        return false;
+        setPort(originalPortNo);
+        return true;
     }
 
     // As the methods requestRead() and requestWrite() are so similar, they're both basically calls to

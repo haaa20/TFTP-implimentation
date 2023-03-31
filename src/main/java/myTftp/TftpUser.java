@@ -412,6 +412,21 @@ public abstract class TftpUser {
         System.out.println(name + ": " + message);
     }
 
+    /**
+     * Reassigns the socket of this user to the given port number
+     *
+     * @param portNo Port number
+     * @return True if successfully rebound
+     */
+    public final boolean setPort(int portNo) {
+        try {
+            socket = new DatagramSocket(portNo);
+            return true;
+        } catch (SocketException e) {
+            return false;
+        }
+    }
+
     protected final byte[] readLocal(String pathname) {
         return fileManager.read(pathname);
     }
