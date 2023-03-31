@@ -22,6 +22,7 @@ public class TftpClient extends TftpUser{
      */
     public boolean requestRead(InetAddress address, int portNo, String pathname) {
         DatagramPacket p = request(address, portNo, pathname, WRMode.READ);
+        acknowledge(p);
 
         receiveData(readBuffer);
         saveData(pathname, assembleData(readBuffer));
