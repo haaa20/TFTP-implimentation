@@ -82,17 +82,18 @@ public abstract class TftpUser {
     }
 
     /**
-     * Receives data and writes it to a list in blocks
+     * Receives data and writes it to a list in blocks, starting from packet a given packet number, usefull
+     * if one or more packets has already been received.
      *
      * @param dataStream The list to chick the blocks of data are to be added
      * @return true if all data was received successfully
      */
-    public boolean receiveData(List<byte[]> dataStream) {
+    public boolean receiveData(List<byte[]> dataStream, int initial) {
         // Receive and acknowledge the first packet - there will (should) always be at least one
         // Extract the first data block
         byte[] data = receiveSingleData();
         dataStream.add(data.clone());
-        int i = 1;
+        int i = initial;
 
         // So long as we are yet to receive a packet of below maximum length, there is more data coming!
         while (data.length >= TFTP_CAPACITY - 4) {
@@ -102,6 +103,16 @@ public abstract class TftpUser {
             i++;
         }
         return true;
+    }
+
+    /**
+     * Receives data and writes it to a list in blocks
+     *
+     * @param dataStream The list to chick the blocks of data are to be added
+     * @return true if all data was received successfully
+     */
+    public boolean receiveData(List<byte[]> dataStream) {
+        return receiveData(dataStream, 1);
     }
 
     /**

@@ -24,7 +24,8 @@ public class TftpClient extends TftpUser{
         DatagramPacket p = request(address, portNo, pathname, WRMode.READ);
         acknowledge(p);
 
-        receiveData(readBuffer);
+        readBuffer.add(TftpPacket.extractData(p));
+        receiveData(readBuffer, 2);
         saveData(pathname, assembleData(readBuffer));
         readBuffer.clear();
 
