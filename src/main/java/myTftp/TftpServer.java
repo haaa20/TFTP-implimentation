@@ -34,9 +34,11 @@ public class TftpServer extends TftpUser implements Runnable {
                 say("received read request");
                 String pathname = TftpPacket.extractPathname(p);
                 ReadStruct newReadStruct = new ReadStruct(pathname);
+                SocketAddress socketAddress = p.getSocketAddress();
 
-                readConnections.put(p.getSocketAddress(), newReadStruct);
+                readConnections.put(socketAddress, newReadStruct);
 
+                sendNextData(socketAddress, newReadStruct);
             }
             else if (op == 2) {
                 // A new WRITE request
@@ -84,8 +86,10 @@ public class TftpServer extends TftpUser implements Runnable {
 
     private void sendNextData(SocketAddress address, ReadStruct rs) {
         byte[] data = rs.next();
+        data = new DataTftpPacket(rs.i, data).toBytes();
         DatagramPacket p = new DatagramPacket(data, data.length);
         p.setSocketAddress(address);
+        say("sending packet no." + rs.i);
         rawSend(p);
     }
 
