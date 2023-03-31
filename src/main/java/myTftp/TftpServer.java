@@ -8,7 +8,7 @@ import static java.lang.Thread.sleep;
 
 public class TftpServer extends TftpUser implements Runnable {
     private boolean running;
-    private Map<SocketAddress, byte[]> readConnections;
+    private Map<SocketAddress, ReadStruct> readConnections;
     private Map<SocketAddress, WriteStruct> writeConnections;
 
     public TftpServer(String name, int portNo) {
@@ -31,10 +31,12 @@ public class TftpServer extends TftpUser implements Runnable {
             if (op == 1) {
                 // A new READ request
                 // Map the request to a new string and send the first block
-                say("received write request");
+                say("received read request");
                 String pathname = TftpPacket.extractPathname(p);
-                readConnections.put(p.getSocketAddress(), readLocal(pathname));
-                sendIthDataPacket(p.getSocketAddress(), 0);
+                ReadStruct newReadStruct = new ReadStruct(pathname);
+
+                readConnections.put(p.getSocketAddress(), newReadStruct);
+
             }
             else if (op == 2) {
                 // A new WRITE request
@@ -73,15 +75,18 @@ public class TftpServer extends TftpUser implements Runnable {
         }
     }
 
-    private boolean sendIthDataPacket(SocketAddress address, int i) {
-        byte[] data = dataWindow(readConnections.get(address), i);
-        byte[] wrappedData = new DataTftpPacket(i, data).toBytes();
+    private boolean handleAckPacket(DatagramPacket p) {
+        SocketAddress address = p.getSocketAddress();
+        ReadStruct rs = readConnections.get(address);
+        sendNextData(address, rs);
+        return true;
+    }
 
-        // create and address the packet
-        DatagramPacket p = new DatagramPacket(wrappedData, wrappedData.length);
+    private void sendNextData(SocketAddress address, ReadStruct rs) {
+        byte[] data = rs.next();
+        DatagramPacket p = new DatagramPacket(data, data.length);
         p.setSocketAddress(address);
-
-        return rawSend(p);
+        rawSend(p);
     }
 
     public void terminate() {
@@ -93,6 +98,8 @@ public class TftpServer extends TftpUser implements Runnable {
         int i;
 
         public ReadStruct(String pathname) {
+            this.iterator = windowIterator(pathname);
+            this.i = 0;
         }
 
         public byte[] next() {

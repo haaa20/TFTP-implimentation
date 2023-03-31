@@ -5,6 +5,6 @@ public class Run {
         ServerThread serverThread = new ServerThread();
 
         clientThread.start();
-        // serverThread.start();
+        serverThread.start();
     }
 }
