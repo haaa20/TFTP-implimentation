@@ -38,43 +38,45 @@ public class TftpServer extends TftpUser implements Runnable {
             else if (op == 2) {
                 // A new WRITE request
                 // Map the request to a new handler thread, and acknowledge (which is done from INSIDE the new thread)
-                String pathname = TftpPacket.extractPathname(p);
-                SocketAddress clientAddress = p.getSocketAddress();
-                WriteHandler handler = new WriteHandler(clientAddress, pathname);
-
-                writeConnections.put(clientAddress, handler);
+                WriteHandler handler = new WriteHandler(p);
                 handler.start();
             }
         }
     }
 
-    private void handleDataPacket(DatagramPacket p, List<byte[]> buffer) {
+    /**
+     * Handles an incoming data packet form a client
+     *
+     * @param p Packet
+     * @param buffer List
+     * @return True if the last packet
+     */
+    private boolean handleDataPacket(DatagramPacket p, List<byte[]> buffer) {
         // Assume that the socket has done its job and a buffer list is in place
         byte[] data = TftpPacket.extractData(p.getData(), p.getLength());
         int length = data.length;
         buffer.add(data);
         acknowledge(p);
 
-        if (length < TFTP_CAPACITY - 4) {
-            // We're done!
-            byte[] completeData = writeStruct.complete();
-            saveData(writeStruct.pathname, completeData);
-            writeConnections.remove(p.getSocketAddress());
-        }
+        return  (length < TFTP_CAPACITY - 4);
     }
 
-    private boolean sendIthDataPacket(SocketAddress address, int i) {
-        byte[] data = dataWindow(readConnections.get(address), i);
-        byte[] wrappedData = new DataTftpPacket(i, data).toBytes();
-        DatagramPacket p = new DatagramPacket(wrappedData, wrappedData.length);
-
-        return rawSend(p);
-    }
+//    private boolean sendIthDataPacket(SocketAddress address, int i) {
+//        byte[] data = dataWindow(readConnections.get(address), i);
+//        byte[] wrappedData = new DataTftpPacket(i, data).toBytes();
+//        DatagramPacket p = new DatagramPacket(wrappedData, wrappedData.length);
+//
+//        return rawSend(p);
+//    }
 
     // Send and acknowledgment from the corresponding handler port
     @Override
     protected void acknowledge(DatagramPacket p) {
-        DatagramSocket s = writeConnections.get(p.getSocketAddress()).tempSocket;
+        SocketAddress address = p.getSocketAddress();
+        if (!writeConnections.containsKey(address)) {
+            super.acknowledge(p);
+        }
+        DatagramSocket s = writeConnections.get(address).tempSocket;
 
         // Preparing the ack packet
         DatagramPacket ackPacket = newAck(p);
@@ -117,7 +119,7 @@ public class TftpServer extends TftpUser implements Runnable {
             // Search for a free tid to bind to
             while (tryAndBind) {
                 try {
-                    this.tempSocket = new DatagramSocket(randomTid());
+                    this.tempSocket = new DatagramSocket(tid);
                     tryAndBind = false;
                 } catch (SocketException e) {
                     tid = randomTid();
@@ -125,6 +127,7 @@ public class TftpServer extends TftpUser implements Runnable {
             }
 
             // Ack the initial packet, which should prompt the client to begin sending data
+            writeConnections.put(initP.getSocketAddress(), this);
             acknowledge(initP);
         }
 
@@ -135,6 +138,7 @@ public class TftpServer extends TftpUser implements Runnable {
             while (running) {
                 // get a packet
                 // TODO error handling
+                System.out.println("Waiting for data to be sent to port " + tempSocket.getPort());
                 p = rawReceive(tempSocket);
 
                 // check p is from client
@@ -143,7 +147,16 @@ public class TftpServer extends TftpUser implements Runnable {
                     continue;
                 }
 
-                handleDataPacket(p, dataBuffer);
+                // If this is the last packet
+                // save the data, disconnect, and stop running
+                if (handleDataPacket(p, dataBuffer)) {
+                     byte[] assembled = assembleData(dataBuffer);
+                     saveData(pathname, assembled);
+
+                     tempSocket.disconnect();
+                     writeConnections.remove(p.getSocketAddress());
+                     running = false;
+                }
             }
         }
     }
