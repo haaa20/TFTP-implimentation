@@ -2,11 +2,15 @@ package myTftp;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.LinkedList;
+import java.util.List;
 
 public class TftpClient extends TftpUser{
+    private List<byte[]> readBuffer;
     public TftpClient(String name, int portNo) {
         super(name, portNo);
-        setTimeout(5000);
+        setTimeout(2000);
+        readBuffer = new LinkedList<>();
     }
 
     /**
@@ -14,11 +18,14 @@ public class TftpClient extends TftpUser{
      *
      * @param address InetAddress
      * @param portNo Integer port number
-     * @param fileName the name of the file (this includes extension)
+     * @param pathname the name of the file (this includes extension)
      * @return True if request granted
      */
-    public boolean requestRead(InetAddress address, int portNo, String fileName) {
-        request(address, portNo, fileName, WRMode.READ);
+    public boolean requestRead(InetAddress address, int portNo, String pathname) {
+        DatagramPacket p = request(address, portNo, pathname, WRMode.READ);
+
+        receiveData(readBuffer);
+        saveData(pathname, assembleData(readBuffer));
 
         return false;
     }
@@ -32,14 +39,7 @@ public class TftpClient extends TftpUser{
      * @return True if request granted
      */
     public boolean requestWrite(InetAddress address, int portNo, String fileName) {
-        request(address, portNo, fileName, WRMode.WRITE);
-        DatagramPacket p = rawReceive();
-
-        // A null packet signifies that our request timed out, try again!
-        while (p == null) {
-            request(address, portNo, fileName, WRMode.WRITE);
-            p = rawReceive();
-        }
+        DatagramPacket p = request(address, portNo, fileName, WRMode.WRITE);
 
         // Check that the packet we received is what we expected:
         // i.e. an ack packet of block no. 0
@@ -59,7 +59,7 @@ public class TftpClient extends TftpUser{
 
     // As the methods requestRead() and requestWrite() are so similar, they're both basically calls to
     // the below with slightly different parameters
-    private void request(InetAddress address, int portNo, String fileName, WRMode mode) {
+    private DatagramPacket request(InetAddress address, int portNo, String fileName, WRMode mode) {
         TftpPacket rq;
         DatagramPacket p;
         byte[] response;
@@ -71,11 +71,19 @@ public class TftpClient extends TftpUser{
             rq = new WrqTftpPacket(fileName);
         }
 
-        // Send out the request package and await acknowledgment
+        // Send out the request package and await a response
         byte[] buf = rq.toBytes();
         p = new DatagramPacket(buf, buf.length);
         p.setAddress(address);
         p.setPort(portNo);
         rawSend(p);
+        p = rawReceive();
+
+        // A null packet signifies that our request timed out, try again!
+        while (p == null) {
+            request(address, portNo, fileName, WRMode.WRITE);
+            p = rawReceive();
+        }
+        return p;
     }
 }
