@@ -52,7 +52,9 @@ public class TftpClient extends TftpUser{
         // Check that the packet we received is what we expected:
         // i.e. an ack packet of block no. 0
         // from the same address we sent the request to
-        if (!p.getAddress().equals(address) || p.getPort() != portNo) {
+        // TODO
+        // but probably a different port (remember, random TID)
+        if (!p.getAddress().equals(address)) {
             sendError(p, "You are not who I expected");
             return false;
         }
