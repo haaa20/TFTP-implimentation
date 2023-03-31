@@ -1,15 +1,17 @@
 package myTftp;
 
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
 
 public class TftpServer extends TftpUser implements Runnable {
     private boolean running;
-    private Map<SocketAddress, byte[]> readConnections;
-    private Map<SocketAddress, WriteStruct> writeConnections;
+    private Map<SocketAddress, ReadHandler> readConnections;
+    private Map<SocketAddress, WriteHandler> writeConnections;
 
     public TftpServer(String name, int portNo) {
         super(name, portNo);
@@ -31,27 +33,26 @@ public class TftpServer extends TftpUser implements Runnable {
             if (op == 1) {
                 // A new READ request
                 // Map the request to a new string and send the first block
-                String pathname = TftpPacket.extractPathname(p);
-                readConnections.put(p.getSocketAddress(), readLocal(pathname));
-                sendIthDataPacket(p.getSocketAddress(), 0);
+                // TODO
             }
             else if (op == 2) {
                 // A new WRITE request
-                // Map the request to a new buffer list, and acknowledge
-                WriteStruct newWriteStruct = new WriteStruct(TftpPacket.extractPathname(p));
-                writeConnections.put(p.getSocketAddress(), newWriteStruct);
-                acknowledge(p);
+                // Map the request to a new handler thread, and acknowledge (which is done from INSIDE the new thread)
+                String pathname = TftpPacket.extractPathname(p);
+                SocketAddress clientAddress = p.getSocketAddress();
+                WriteHandler handler = new WriteHandler(clientAddress, pathname);
+
+                writeConnections.put(clientAddress, handler);
+                handler.start();
             }
         }
     }
 
-    private void handleDataPacket(DatagramPacket p) {
+    private void handleDataPacket(DatagramPacket p, List<byte[]> buffer) {
         // Assume that the socket has done its job and a buffer list is in place
         byte[] data = TftpPacket.extractData(p.getData(), p.getLength());
         int length = data.length;
-        WriteStruct writeStruct = writeConnections.get(p.getSocketAddress());
-
-        writeStruct.add(data);
+        buffer.add(data);
 
         if (length < TFTP_CAPACITY - 4) {
             // We're done!
@@ -89,30 +90,52 @@ public class TftpServer extends TftpUser implements Runnable {
      * handling the request until completion
      */
     private class WriteHandler extends Thread {
+        DatagramSocket tempSocket;
+        SocketAddress clientAddress;
+        List<byte[]> dataBuffer;
+        String pathname;
+        boolean running;
+
+        public WriteHandler(DatagramPacket initP) {
+            this.clientAddress = initP.getSocketAddress();
+            this.running = true;
+            this.dataBuffer = new LinkedList<>();
+            this.pathname = TftpPacket.extractPathname(initP);
+
+            int tid = randomTid();
+            boolean tryAndBind = true;
+
+            // Search for a free tid to bind to
+            while (tryAndBind) {
+                try {
+                    this.tempSocket = new DatagramSocket(randomTid());
+                    tryAndBind = false;
+                } catch (SocketException e) {
+                    tid = randomTid();
+                }
+            }
+
+            // Ack the initial packet, which should prompt the client to begin sending data
+            acknowledge(p);
+        }
+
         @Override
         public void run() {
-            super.run();
-        }
-    }
+            DatagramPacket p;
 
-    /**
-     * Just a li'l structure to keep path names and buffer lists in one place
-     */
-    private class WriteStruct {
-        String pathname;
-        List<byte[]> buffer;
+            while (running) {
+                // get a packet
+                // TODO error handling
+                p = rawReceive(tempSocket);
 
-        public WriteStruct(String pathname) {
-            this.pathname = pathname;
-            this.buffer = new LinkedList<>();
-        }
+                // check p is from client
+                if (!p.getSocketAddress().equals(clientAddress)) {
+                    sendError(p, "You are not my client");
+                    continue;
+                }
 
-        public void add(byte[] block) {
-            buffer.add(block);
-        }
-
-        public byte[] complete() {
-            return assembleData(buffer);
+                handleDataPacket(p, dataBuffer);
+            }
         }
     }
 }

@@ -397,6 +397,20 @@ public abstract class TftpUser {
     }
 
     /**
+     * Waits to receive a packet from the given socket, and returns it.
+     * Does not acknowledge. Returns null if unsuccessful
+     */
+    protected final DatagramPacket rawReceive(DatagramSocket tempSocket) {
+        // This SHOULD be the only method to directly use socket.receive()
+        try {
+            tempSocket.receive(packet);
+        } catch (IOException e) {
+            return null;
+        }
+        return packet;
+    }
+
+    /**
      * Sends out an error package in response to p - usually done when p was unexpected
      *
      * @param p problem DatagramPacket
