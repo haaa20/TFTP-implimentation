@@ -1,22 +1,21 @@
 package myTftp;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.*;
 
 
 public abstract class TftpUser {
     public static int TFTP_CAPACITY = 512;
 
+    private int originalPortNo;
     private String name;
     private DatagramPacket packet;
     private DatagramSocket socket;
     private byte[] buf;
     private boolean debug;
     private FileManager fileManager;
+    private int timeout;
 
     public TftpUser(String name, int portNo) {
         this.name = name;
@@ -30,6 +29,7 @@ public abstract class TftpUser {
         } catch (SocketException e) {
             System.err.println("WARNING: " + name + " could not set up the socket correctly");
         }
+        this.originalPortNo = portNo;
     }
 
     /**
@@ -222,17 +222,21 @@ public abstract class TftpUser {
      */
     protected void acknowledge(DatagramPacket p) {
         // Preparing the ack packet
-        int blockNo = TftpPacket.extractPacketNo(p.getData());
+        int ackNo = TftpPacket.extractPacketNo(p);
+        DatagramPacket ackPacket = newAck(p.getSocketAddress(), ackNo);
+
+        // Sending the ack packet
+        rawSend(ackPacket);
+    }
+
+    protected final DatagramPacket newAck(SocketAddress address, int blockNo) {
         AckTftpPacket ackData = new AckTftpPacket(blockNo);
         DatagramPacket ackPacket = new DatagramPacket(ackData.toBytes(), 4);
         say("Received packet no." + blockNo);
 
         // Addressing the acknowledgement packet
-        ackPacket.setAddress(p.getAddress());
-        ackPacket.setPort(p.getPort());
-
-        // Sending the ack packet
-        rawSend(ackPacket);
+        ackPacket.setSocketAddress(address);
+        return ackPacket;
     }
 
     public boolean saveData(String pathname, byte[] contents) {
@@ -393,6 +397,22 @@ public abstract class TftpUser {
             return false;
         }
     }
+    /**
+     * Sends the given packet out of the  given socket
+     *
+     * @param p DatagramPacket
+     * @param s Socket
+     * @return True if packet successfully sent out
+     */
+    protected final boolean rawSend(DatagramPacket p, DatagramSocket s) {
+        // This SHOULD be the only method to directly use socket.send()
+        try {
+            s.send(p);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
 
     /**
      * Waits to receive a packet, and returns it. Does not acknowledge. Returns null if unsuccessful
@@ -400,7 +420,22 @@ public abstract class TftpUser {
     protected final DatagramPacket rawReceive() {
         // This SHOULD be the only method to directly use socket.receive()
         try {
+            setSocketTimeout(socket);
             socket.receive(packet);
+        } catch (IOException e) {
+            return null;
+        }
+        return packet;
+    }
+
+    /**
+     * Waits to receive a packet from the given socket, and returns it.
+     * Does not acknowledge. Returns null if unsuccessful
+     */
+    protected final DatagramPacket rawReceive(DatagramSocket tempSocket) {
+        // This SHOULD be the only method to directly use socket.receive()
+        try {
+            tempSocket.receive(packet);
         } catch (IOException e) {
             return null;
         }
@@ -425,6 +460,42 @@ public abstract class TftpUser {
         System.out.println(name + ": " + message);
     }
 
+    protected final int randomTid() {
+        int tid = (int) (originalPortNo + Math.random()*500);
+        return tid;
+    }
+
+    /**
+     * Reassigns the socket of this user to the given port number
+     *
+     * @param portNo Port number
+     * @return True if successfully rebound
+     */
+    public final boolean setPort(int portNo) {
+        try {
+            socket = new DatagramSocket(portNo);
+            return true;
+        } catch (SocketException e) {
+            return false;
+        }
+    }
+
+    /**
+     * resets the port to the original port number
+     * @return true if successful
+     */
+    public final boolean resetPort() {
+        return setPort(originalPortNo);
+    }
+
+    public int getOriginalPortNo() {
+        return originalPortNo;
+    }
+
+    public void setOriginalPortNo(int originalPortNo) {
+        this.originalPortNo = originalPortNo;
+    }
+
     protected final byte[] readLocal(String pathname) {
         return fileManager.read(pathname);
     }
@@ -445,9 +516,13 @@ public abstract class TftpUser {
         this.debug = debug;
     }
 
-    public boolean setTimeout(int milliseconds) {
+    public void setTimeout(int milliseconds) {
+        this.timeout = milliseconds;
+    }
+
+    private boolean setSocketTimeout(DatagramSocket s) {
         try {
-            socket.setSoTimeout(milliseconds);
+            s.setSoTimeout(timeout);
             return true;
         } catch (SocketException e) {
             return false;
