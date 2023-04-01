@@ -72,5 +72,18 @@ public abstract class TftpPacket {
         return extractPathname(p.getData());
     }
 
+    public static ErrorStruct checkError(DatagramPacket p) { return checkError(p.getData())}
+
+    private static ErrorStruct checkError(byte[] data) {
+        if (data[0] != 5) {
+            return new ErrorStruct();
+        }
+
+        // Scan error message
+        int i = 4;
+        while (data[i] != (byte)0) {i++;}
+        return new ErrorStruct(data[2], Arrays.copyOfRange(data, 4, i));
+    }
+
     public abstract byte[] toBytes();
 }
