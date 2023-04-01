@@ -85,22 +85,24 @@ public abstract class TftpUser {
      * Receives data and writes it to a list in blocks, starting from packet a given packet number, usefull
      * if one or more packets has already been received.
      *
+     * @param address The address from which the data is expected
      * @param dataStream The list to chick the blocks of data are to be added
+     * @param initial How many blocks were already in place when this function was called
      * @return true if all data was received successfully
      */
-    public boolean receiveData(List<byte[]> dataStream, int initial) {
+    public boolean receiveData(SocketAddress address, List<byte[]> dataStream, int initial) {
         // Receive and acknowledge the first packet - there will (should) always be at least one
         // Extract the first data block
-        byte[] data = receiveSingleData();
-        dataStream.add(data.clone());
         int i = initial;
+        byte[] data = receiveSingleData(address, 1);
+        dataStream.add(data.clone());
 
         // So long as we are yet to receive a packet of below maximum length, there is more data coming!
         while (data.length >= TFTP_CAPACITY - 4) {
-            say("Expecting another packet...");
-            data = receiveSingleData();
-            dataStream.add(data.clone());
             i++;
+            say("Expecting another packet...");
+            data = receiveSingleData(address, 1);
+            dataStream.add(data.clone());
         }
         return true;
     }
@@ -111,8 +113,8 @@ public abstract class TftpUser {
      * @param dataStream The list to chick the blocks of data are to be added
      * @return true if all data was received successfully
      */
-    public boolean receiveData(List<byte[]> dataStream) {
-        return receiveData(dataStream, 1);
+    public boolean receiveData(SocketAddress address, List<byte[]> dataStream) {
+        return receiveData(address, dataStream, 1);
     }
 
     /**
@@ -120,9 +122,9 @@ public abstract class TftpUser {
      *
      * @return The data as a continuous byte array
      */
-    public byte[] receiveAndAssemble() {
+    public byte[] receiveAndAssemble(SocketAddress address) {
         List<byte[]> blockBuf = new ArrayList();
-        receiveData(blockBuf);
+        receiveData(address, blockBuf);
         return assembleData(blockBuf);
     }
 
@@ -180,6 +182,25 @@ public abstract class TftpUser {
      */
     public byte[] receiveSingleData() {
         DatagramPacket p = rawReceive();
+        acknowledge(p);
+        int len = packet.getLength();
+
+        return TftpPacket.extractData(buf, len);
+    }
+
+    /**
+     * Waits until a packet is received through the socket, and sends an acknowledgement. If the request times out,
+     * another ack of sent to the given address
+     * @param blockNo the block number of the expected packet
+     */
+    public byte[] receiveSingleData(SocketAddress address, int blockNo) {
+        DatagramPacket p = rawReceive();
+
+        while (p == null) {
+            rawSend(newAck(address, blockNo));
+            p = rawReceive();
+        }
+
         acknowledge(p);
         int len = packet.getLength();
 

@@ -30,7 +30,7 @@ public class TftpClient extends TftpUser{
         acknowledge(p);
 
         readBuffer.add(TftpPacket.extractData(p));
-        receiveData(readBuffer, 2);
+        receiveData(p.getSocketAddress(), readBuffer, 2);
         saveData(pathname, assembleData(readBuffer));
         readBuffer.clear();
 
