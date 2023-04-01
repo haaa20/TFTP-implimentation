@@ -33,6 +33,10 @@ public class TftpServer extends TftpUser implements Runnable {
                 // Map the request to a new string and send the first block
                 say("received read request");
                 String pathname = TftpPacket.extractPathname(p);
+
+                // Check that the pathname exists
+                if (!fileExists(pathname)) {noSuchFileError(p.getSocketAddress(), pathname); continue;}
+
                 ReadStruct newReadStruct = new ReadStruct(pathname);
                 SocketAddress socketAddress = p.getSocketAddress();
 
@@ -59,6 +63,19 @@ public class TftpServer extends TftpUser implements Runnable {
                 handleAckPacket(p);
             }
         }
+    }
+
+    /**
+     * Sends a "no such file error" to the target address
+     *
+     * @param socketAddress address
+     * @param pathname pathname, for the error message
+     */
+    private void noSuchFileError(SocketAddress socketAddress, String pathname) {
+        TftpPacket e = new ErrTftpPacket(17, "cannot find file: " + pathname);
+        DatagramPacket ep = new DatagramPacket(e.toBytes(), TFTP_CAPACITY);
+        ep.setSocketAddress(socketAddress);
+        rawSend(ep);
     }
 
     private void handleDataPacket(DatagramPacket p) {
