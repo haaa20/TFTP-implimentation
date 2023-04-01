@@ -27,6 +27,14 @@ public class TftpClient extends TftpUser{
             p = request(address, portNo, pathname, WRMode.READ);
         }
 
+        // Check that p is not an error
+        ErrorStruct error = TftpPacket.checkError(p);
+        if (error.isError()) {
+            System.err.println("Could not read from server:");
+            System.err.println(new String(error.getMessage()));
+            return false;
+        }
+
         acknowledge(p);
 
         readBuffer.add(TftpPacket.extractData(p));
