@@ -155,22 +155,17 @@ public abstract class TftpUser {
         }
 
         // wait for an acknowledgement
-        packet = rawReceive();
+        DatagramPacket ack = rawReceive();
 
         // time for some ERROR HANDLING
-        while (packet == null) {
-            packet = freshPacket();
-            packet.setAddress(address);
-            packet.setPort(port);
-
+        while (ack == null) {
             if (!rawSend(packet)) {
                 return -1;
             }
-
-            packet = rawReceive();
+            ack = rawReceive();
         }
 
-        buf = packet.getData();
+        buf = ack.getData();
         int n = TftpPacket.extractPacketNo(buf);
         if (n == blockNo) {
             return 0;
