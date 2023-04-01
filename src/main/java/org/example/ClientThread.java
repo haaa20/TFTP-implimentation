@@ -18,6 +18,7 @@ public class ClientThread extends Thread {
     @Override
     public void run() {
         client.setDebug(true);
+        client.setTimeout(2000);
 
         InetAddress serverAddress;
         try {
