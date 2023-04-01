@@ -31,7 +31,7 @@ public class ClientThread extends Thread {
 
         client.requestWrite(serverAddress, 9000, "lyrics.xml");
 
-        client.requestRead(serverAddress, 9000, "steamedHams.txt");
+        client.requestRead(serverAddress, 9000, "hotFood.txt");
     }
 }
 
