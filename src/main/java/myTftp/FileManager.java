@@ -62,4 +62,9 @@ public class FileManager {
     public void setHomepath(String homepath) {
         this.homepath = homepath;
     }
+
+    public boolean exists(String pathname) {
+        selectFile(pathname);
+        return selectedFile.exists();
+    }
 }

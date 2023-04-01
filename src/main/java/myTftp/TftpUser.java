@@ -504,6 +504,17 @@ public abstract class TftpUser {
         return setPort(originalPortNo);
     }
 
+    /**
+     * Check to see if the path/file given actually exists
+     * @param pathname to check
+     * @return True if exists
+     */
+    public boolean fileExists(String pathname) {
+        return fileManager.exists(pathname);
+    }
+
+
+
     public int getOriginalPortNo() {
         return originalPortNo;
     }
