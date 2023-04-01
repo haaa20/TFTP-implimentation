@@ -72,7 +72,7 @@ public abstract class TftpPacket {
         return extractPathname(p.getData());
     }
 
-    public static ErrorStruct checkError(DatagramPacket p) { return checkError(p.getData())}
+    public static ErrorStruct checkError(DatagramPacket p) { return checkError(p.getData());}
 
     private static ErrorStruct checkError(byte[] data) {
         if (data[0] != 5) {
